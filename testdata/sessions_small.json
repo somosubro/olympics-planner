@@ -1,0 +1,13 @@
+[
+  {
+    "id": "s1",
+    "sport": "Tennis",
+    "sessionCode": "TEN-001",
+    "title": "Tennis Session 1",
+    "date": "2028-07-15",
+    "dayOfWeek": "Saturday",
+    "startTime": "10:00",
+    "venue": "Center Court",
+    "includedEvents": ["Singles Round 1"]
+  }
+]

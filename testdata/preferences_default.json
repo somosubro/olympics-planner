@@ -1,0 +1,9 @@
+{
+  "allowedSports": ["Tennis", "Swimming"],
+  "sportPriority": ["Tennis", "Swimming"],
+  "allowedDays": ["Saturday", "Sunday"],
+  "rules": {
+    "noSameSportAcrossDays": true,
+    "preferDayPairs": [["Saturday", "Sunday"]]
+  }
+}

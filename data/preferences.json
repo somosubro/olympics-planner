@@ -1,0 +1,9 @@
+{
+  "allowedSports": [],
+  "sportPriority": [],
+  "allowedDays": [],
+  "rules": {
+    "noSameSportAcrossDays": true,
+    "preferDayPairs": []
+  }
+}
