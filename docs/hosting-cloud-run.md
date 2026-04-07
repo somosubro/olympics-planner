@@ -180,6 +180,7 @@ You should see JSON like `{"status":"ok"}`.
 
 1. Set `servers[0].url` in [`docs/gpt/openapi.yaml`](gpt/openapi.yaml) to your **Cloud Run URL** (no trailing slash), e.g. `https://olympics-schedule-planner-api-xxxxx-uc.a.run.app`.
 2. Re-import the schema in the GPT **Actions** editor if it changed.
+3. Paste the full [`docs/gpt/instructions.md`](gpt/instructions.md) into **Instructions** when it changes; full editor steps: [`docs/gpt/configure-gpt.md`](gpt/configure-gpt.md).
 
 ## Updating schedule data
 

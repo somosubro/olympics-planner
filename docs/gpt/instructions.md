@@ -1,13 +1,3 @@
-# Custom GPT: Olympics Schedule Planner
-
-Use the text below as **Instructions** in the ChatGPT GPT editor. Pair it with **Actions** using [`openapi.yaml`](openapi.yaml).
-
----
-
-## Instructions (paste into GPT)
-
-Copy from **“You are the Olympics Schedule Planner”** through **“…failed validation.”** into your GPT’s **Instructions** field (do not include the markdown heading above or the repository notes below). Optional Knowledge files [`user-readme.md`](user-readme.md) and [`preset-plans.md`](preset-plans.md) are described at the end of the paste block.
-
 You are the **Olympics Schedule Planner** for LA28. You help families explore the session schedule and build **one-day, weekend, or multi-day** attendance plans using **real session data from the API only**.
 
 ### Data source (critical)
@@ -30,10 +20,17 @@ Whenever you call **rankSessions**, **rankPlans**, or **validatePlan**, include 
 - **`allowedSports`:** Sports they will attend (empty means “allow none” for scoring—use non-empty lists for real trips).
 - **`sportPriority`:** Earlier in the list = higher priority.
 - **`allowedDays`:** Weekdays they can attend.
-- **`rules.noSameSportAcrossDays`:** `true` if they do not want the same sport on more than one day in a multi-day plan (when that rule applies).
+- **`rules.noSameSportAcrossDays`:** Default **on** (omit the field or set `true`): each sport appears on **at most one day** in a multi-day plan. Set **`false` only** when the user clearly wants the **same sport on multiple days** (e.g. “tennis every day July 22–25”). Do not turn it off just because they did not mention variety.
 - **`rules.preferDayPairs`:** e.g. `[["Saturday","Sunday"]]` to favor that pairing in scoring.
 
 Merge the user’s latest message into one coherent `preferences` object for each tool call.
+
+### Answering “what constraints / rules do you enforce?”
+
+If the user asks what you enforce when planning (any similar phrasing):
+
+- **Multi-day variety (default, not opt-in):** For **two_day** and **multi_day** plans, each **sport** appears on **at most one calendar day** unless the user **explicitly** wants the same sport on multiple days. The API **defaults** `rules.noSameSportAcrossDays` to **on** when omitted. **Do not** describe this as “when requested,” “if you don’t want repeats,” or only when they ask for variety—that misstates the product. Correct one-liner: **By default we don’t repeat the same sport across different days; say clearly if you want that exception** (e.g. tennis every day).
+- You may also mention: real sessions from tools only; validity/ranking from **validatePlan** / **rankPlans**; **allowedSports** / **allowedDays**; **preferDayPairs** when relevant; alternates from real same-day sessions; full **includedEvents** as returned; tickets/prices/hotels/transport out of scope.
 
 ### Typical flows
 
@@ -94,96 +91,3 @@ Tickets, prices, hotels, and transport—say so briefly if asked.
 ### Style
 
 Concise, friendly, and organized (tables or bullets for comparisons). Never present an **invalid** plan as a final recommendation—fix it or explain what failed validation.
-
----
-
-## Step-by-step: new GPT or repurpose an existing one
-
-Use this if you are **editing a GPT that previously relied on uploaded static files**—switch it to **live API** data so sessions stay in sync with your deployed backend.
-
-### A. Prepare the OpenAPI file (once per deploy URL)
-
-1. Open [`openapi.yaml`](openapi.yaml) in this repo.
-2. Find the **`servers:`** section near the top (about lines 9–11). Under it you’ll see a line starting with **`-`** and then **`url:`** — that is the base URL ChatGPT will call. Set **`url:`** to your Cloud Run base URL **with no path and no trailing slash**, e.g. `https://olympics-schedule-planner-api-xxxxx-uc.a.run.app`. (Docs sometimes say “`servers[0]`”; that only means “the first entry under `servers:`”.)
-3. Save the file. You will paste its **full contents** into ChatGPT in step D (or host the raw YAML at a public URL and use **Import from URL** if your ChatGPT UI offers it).
-
-### B. Open your GPT in the editor
-
-1. Go to ChatGPT → **My GPTs** (from your profile / sidebar, or **Explore GPTs** → **My GPTs**).
-2. Click the GPT you want to repurpose → **Edit** (pencil icon).
-
-### C. Knowledge: turn off or replace static schedule files
-
-1. In **Configure**, find **Knowledge**.
-2. **Remove** uploaded PDFs/CSVs/JSON that duplicated the **session schedule** (or they can contradict the API).  
-   - Optional: keep **only** non-schedule docs that do not conflict with live data.
-3. If you clear schedule Knowledge, the model relies on **Actions** + **Instructions**—which is what you want for live sessions.
-
-### D. Actions: attach the API
-
-1. Scroll to **Actions** → **Create new action** (or **Add action**).
-2. Remove or replace any old schema that pointed at a mock URL or localhost.
-3. **Schema** → **Paste** the **entire** edited `openapi.yaml` (or **Import from URL** if you host the file).
-4. **Authentication**: for a public Cloud Run service with no API key, choose **None**. Add **API Key** / **Bearer** later if you secure the API.
-5. **Save**. Fix any validation errors (usually `servers.url` or YAML indentation).
-
-### E. Instructions
-
-1. In **Configure**, open **Instructions**.
-2. **Replace** the old text with the full block from **[Instructions (paste into GPT)](#instructions-paste-into-gpt)** above (from “You are the **Olympics Schedule Planner**…” through “…failed validation.”), including the **Optional Knowledge** lines if you upload `user-readme.md` / `preset-plans.md`.
-3. Save.
-
-### F. Name, description, and starters (optional)
-
-1. Adjust **Name** / **Description** if needed (e.g. Olympics Schedule Planner).
-2. **Conversation starters**: use **Suggested conversation starters** below or keep yours if they still fit.
-
-### G. Test before sharing
-
-1. Use the **Preview** pane.
-2. Ask something that must use live data, e.g. “List tennis sessions on Saturday.” Confirm responses match your API (not stale uploads).
-3. On errors, check **Actions** and Cloud Run **Logs** in Google Cloud Console.
-
-### H. Share with family
-
-1. **Save** the GPT.
-2. Set **visibility** (only you, link-only, or public).
-3. Share the **GPT link**—family uses ChatGPT with your GPT; they do **not** need the raw `*.run.app` URL.
-
-### I. Privacy policy URL (if ChatGPT says “Public actions require valid privacy policy URLs”)
-
-GPTs that use **Actions** and are **public** (or in some cases link-shared) must have a **Privacy policy** field set to a working **HTTPS** URL.
-
-1. Edit **[`privacy-policy.html`](privacy-policy.html)** and replace **`replace-with-your-email@example.com`** with a real contact address or URL.
-2. Host the **`docs/`** folder on **GitHub Pages** and use the published URL of the HTML file. Full steps and the exact URL pattern are in **[`../GITHUB_PAGES.md`](../GITHUB_PAGES.md)** (summary: `https://<user>.github.io/<repo>/gpt/privacy-policy.html`).
-3. In the GPT editor → **Configure**, set **Privacy policy** to that **HTTPS** URL, then save.
-
-If you only need family access, try visibility **Anyone with the link** first—requirements can differ from **Public** in the store.
-
----
-
-## Configure Actions (short version)
-
-1. API must be **HTTPS** (Cloud Run).
-2. Set the **`url`** under **`servers:`** (the `- url:` line) in [`openapi.yaml`](openapi.yaml) to your base URL (no trailing slash).
-3. **Configure** → **Actions** → paste schema → **Authentication: None** if the API is open.
-
----
-
-## Suggested conversation starters
-
-- “What tennis sessions are on Saturday July 15, 2028?”
-- “I want a two-day weekend plan with athletics and tennis—no repeat sports across days.”
-- “Rank these sessions for me—I prefer athletics over swimming.”
-- “Is this plan valid?” (then assemble a plan from real IDs and validate)
-
----
-
-## Related docs in this repo
-
-- [`user-readme.md`](user-readme.md) — user-facing help text (optional **Knowledge** upload)
-- [`preset-plans.md`](preset-plans.md) — example weekends only (optional **Knowledge**; not authoritative)
-- [`privacy-policy.html`](privacy-policy.html) / [`privacy-policy.md`](privacy-policy.md) — template for the **Privacy policy** URL OpenAI may require
-- [`docs/api-spec.md`](../api-spec.md) — full HTTP behavior
-- [`docs/preferences-guide.md`](../preferences-guide.md) — user-facing preference semantics
-- [`docs/data-contract.md`](../data-contract.md) — `Session`, `Plan`, `Preferences` shapes

@@ -15,9 +15,7 @@ func TestValidatePlan_RejectsRepeatedSportAcrossDays(t *testing.T) {
 	prefs := domain.Preferences{
 		AllowedSports: []string{"Tennis"},
 		AllowedDays:   []string{"Saturday", "Sunday"},
-		Rules: domain.Rules{
-			NoSameSportAcrossDays: true,
-		},
+		Rules:         domain.Rules{}, // omitted noSameSportAcrossDays → default on
 	}
 
 	plan := domain.Plan{
@@ -44,7 +42,7 @@ func TestValidatePlan_SessionNotFound(t *testing.T) {
 	prefs := domain.Preferences{
 		AllowedSports: []string{"Tennis"},
 		AllowedDays:   []string{"Saturday"},
-		Rules:         domain.Rules{NoSameSportAcrossDays: false},
+		Rules:         domain.Rules{NoSameSportAcrossDays: boolPtr(false)},
 	}
 	plan := domain.Plan{
 		PlanType: domain.PlanTypeOneDay,

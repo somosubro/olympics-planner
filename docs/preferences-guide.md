@@ -22,7 +22,7 @@ The conversational app (or you, when calling the API) sends a **single effective
 | **`allowedSports`** | Sports you are willing to consider. Sessions outside this set fail validation / ranking rules that depend on preferences. |
 | **`sportPriority`** | Order from **most** to **least** wanted. Used when **ranking**—higher-listed sports score higher (within the model in [scoring-and-validation-spec.md](scoring-and-validation-spec.md)). |
 | **`allowedDays`** | Which weekdays are in play (e.g. only `Saturday` and `Sunday` for a weekend trip). |
-| **`rules.noSameSportAcrossDays`** | If `true`, a multi-day plan cannot use the **same sport** on two different days (e.g. Tennis Saturday and Tennis Sunday is invalid). |
+| **`rules.noSameSportAcrossDays`** | **Default `true`** (omit or set `true`): a multi-day plan cannot use the **same sport** on two different days. Set **`false` only** if the user explicitly wants the same sport on multiple days. |
 | **`rules.preferDayPairs`** | Soft ranking hint: which **pairs of weekdays** you like for multi-day plans (e.g. Saturday + Sunday). Optional but useful for plan scores. |
 | **`rules.sportSpecific`** | Reserved; use `{}` for MVP. |
 

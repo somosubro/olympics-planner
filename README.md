@@ -42,7 +42,7 @@ You do **not** have to use Lambda. A **container** (Dockerfile in repo) on Cloud
 
 ## Custom GPT (ChatGPT)
 
-To wire a **Custom GPT** to this API, use [`docs/gpt/instructions.md`](docs/gpt/instructions.md) (copy the Instructions block) and [`docs/gpt/openapi.yaml`](docs/gpt/openapi.yaml) (import as **Actions**). The API must be reachable over **HTTPS** (use a tunnel such as ngrok while developing). Preferences are sent in JSON request bodies; see [`docs/preferences-guide.md`](docs/preferences-guide.md).
+To wire a **Custom GPT** to this API: paste the **entire** [`docs/gpt/instructions.md`](docs/gpt/instructions.md) into the GPT **Instructions** field (that file is copy-paste only and changes most often); import [`docs/gpt/openapi.yaml`](docs/gpt/openapi.yaml) as **Actions**. One-time setup, Knowledge, privacy URL, and starters: [`docs/gpt/configure-gpt.md`](docs/gpt/configure-gpt.md). **Shareable web entry point** (GitHub Pages): [`docs/index.html`](docs/index.html) — see [`docs/GITHUB_PAGES.md`](docs/GITHUB_PAGES.md). **Future: saved preferences/plans** (API + GPT): [`docs/gpt/roadmap-user-persistence.md`](docs/gpt/roadmap-user-persistence.md). The API must be reachable over **HTTPS** (use a tunnel such as ngrok while developing). Preferences are sent in JSON request bodies; see [`docs/preferences-guide.md`](docs/preferences-guide.md). **Manual GPT regression:** [`docs/gpt-test-plan.md`](docs/gpt-test-plan.md).
 
 ## Import LA28 schedule (CLI)
 

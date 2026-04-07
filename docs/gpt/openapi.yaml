@@ -217,11 +217,13 @@ components:
 
     Rules:
       type: object
-      required:
-        - noSameSportAcrossDays
       properties:
         noSameSportAcrossDays:
           type: boolean
+          default: true
+          description: >
+            When true or omitted, each sport may appear on at most one calendar day in multi-day plans.
+            Set explicitly to false only when the user wants the same sport on multiple days (e.g. tennis every day).
         preferDayPairs:
           type: array
           items:

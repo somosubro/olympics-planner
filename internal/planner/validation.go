@@ -179,7 +179,7 @@ func ValidatePlan(plan domain.Plan, sessions []domain.Session, prefs domain.Pref
 			}
 		}
 
-		if prefs.Rules.NoSameSportAcrossDays {
+		if prefs.Rules.EffectiveNoSameSportAcrossDays() {
 			if prevDay, seen := seenSportByDay[primary.Sport]; seen && prevDay != day.Date {
 				errs = append(errs, domain.ValidationError{
 					Code:    "REPEATED_SPORT_ACROSS_DAYS",

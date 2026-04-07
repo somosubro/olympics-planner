@@ -212,3 +212,9 @@ For MVP correctness layer “done” from a testing perspective:
 
 - Load testing and performance SLOs (unless added later).
 - Production PDFs that cannot be redistributed (use synthetic or truncated inputs in CI).
+
+---
+
+## Related: Custom GPT (manual)
+
+ChatGPT Actions and instructions are exercised with **[gpt-test-plan.md](gpt-test-plan.md)** (repeatable checklist, not automated in this repo).

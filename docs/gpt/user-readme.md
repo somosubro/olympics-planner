@@ -20,7 +20,16 @@ Examples:
 
 ## Preferences
 
-Say what you care about: sports, days, not repeating the same sport across days, weekend pairs, etc. The assistant turns that into **`preferences`** for the API. One-off tweaks apply to the current turn unless you repeat them.
+Say what you care about: sports, days, weekend pairs, etc. The assistant turns that into **`preferences`** for the API. One-off tweaks apply to the current turn unless you repeat them.
+
+## Planning rules (what’s enforced by default)
+
+Use this section when the user asks what **constraints** or **rules** apply—so answers stay aligned with the API.
+
+- **Multi-day variety (default):** For **weekend or multi-day** plans, each **sport** is used on **at most one calendar day** (you do **not** need to ask for “no repeats”—that is the **normal** behavior). The API enforces this when **`validatePlan`** / **`rankPlans`** run unless preferences opt out.
+- **Same sport on multiple days (exception):** If you **want** one sport on several days—for example, “tennis only, July 22–25”—say that **clearly**. The assistant sets **`rules.noSameSportAcrossDays`** to **`false`** for that request so validation can allow it.
+
+**Do not describe the variety rule as “only when you request it” or “if you don’t want the same sport twice.”** The default is variety; repeating a sport across days is the **explicit exception**.
 
 ## What the assistant does
 

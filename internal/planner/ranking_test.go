@@ -16,7 +16,7 @@ func TestRankSessionsPrefersHigherPrioritySport(t *testing.T) {
 		AllowedSports: []string{"Tennis", "Swimming"},
 		AllowedDays:   []string{"Saturday"},
 		SportPriority: []string{"Tennis", "Swimming"},
-		Rules:         domain.Rules{NoSameSportAcrossDays: false},
+		Rules:         domain.Rules{NoSameSportAcrossDays: boolPtr(false)},
 	}
 
 	scored := RankSessions(sessions, prefs, false)

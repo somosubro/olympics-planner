@@ -1,6 +1,11 @@
-# GitHub Pages for the privacy policy
+# GitHub Pages (privacy policy + public landing page)
 
-The privacy policy for the Custom GPT lives at [`gpt/privacy-policy.html`](gpt/privacy-policy.html). Hosting the **`docs/`** folder on **GitHub Pages** gives you a stable **HTTPS** URL for ChatGPT’s **Privacy policy** field.
+Hosting the **`docs/`** folder on **GitHub Pages** gives stable **HTTPS** URLs for:
+
+1. **Landing page** — [`index.html`](index.html) at the site root: short blurb and a **large “Open in ChatGPT”** button for sharing. Edit the file and set the button’s `href` to your real Custom GPT link (`https://chatgpt.com/g/...` from ChatGPT → My GPTs → copy link).
+2. **Privacy policy** — [`gpt/privacy-policy.html`](gpt/privacy-policy.html) for ChatGPT’s **Privacy policy** field.
+
+**Expansion (saved preferences / plans on your API)** is static HTML–only; persistence lives on your backend. See [`gpt/roadmap-user-persistence.md`](gpt/roadmap-user-persistence.md).
 
 ## One-time setup
 
@@ -14,7 +19,7 @@ The privacy policy for the Custom GPT lives at [`gpt/privacy-policy.html`](gpt/p
 
 5. Wait until the banner shows “Your site is live at …” (often one or two minutes).
 
-## Your privacy policy URL
+## Your site URLs
 
 For a **project site**, GitHub serves the contents of `docs/` at:
 
@@ -22,7 +27,15 @@ For a **project site**, GitHub serves the contents of `docs/` at:
 https://<YOUR_GITHUB_USERNAME>.github.io/<REPOSITORY_NAME>/
 ```
 
-The privacy policy HTML file is at **`gpt/privacy-policy.html`** inside `docs/`, so the URL to paste into ChatGPT is:
+**Landing (share with family):**
+
+```text
+https://<YOUR_GITHUB_USERNAME>.github.io/<REPOSITORY_NAME>/
+```
+
+(opens `index.html` — ensure you replaced the ChatGPT button `href` in [`index.html`](index.html).)
+
+**Privacy policy** (paste into ChatGPT’s Privacy policy field):
 
 ```text
 https://<YOUR_GITHUB_USERNAME>.github.io/<REPOSITORY_NAME>/gpt/privacy-policy.html

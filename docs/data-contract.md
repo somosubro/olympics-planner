@@ -317,7 +317,7 @@ Avoid mixed naming variants in runtime data.
 
 #### `rules.noSameSportAcrossDays`
 - type: `boolean`
-- required: yes
+- required: no; **default when omitted: `true`** (each sport at most one calendar day across the plan). Send **`false` only** when the user explicitly wants the same sport on multiple days.
 - meaning: whether repeated sports across different days invalidate a `two_day` or `multi_day` plan
 
 #### `rules.preferDayPairs`

@@ -341,6 +341,7 @@ Conversational or request-specific overrides (for example “avoid cricket”) a
 - required
 - must match canonical `Preferences` contract
 - must already reflect any merged overrides for this request
+- **`rules.noSameSportAcrossDays`:** if omitted, the server treats it as **`true`** (no same sport on more than one day unless explicitly set `false`).
 
 ### Response: 200
 
