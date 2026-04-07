@@ -38,6 +38,8 @@ func NormalizeSport(currentSport, code string) string {
 		return "Canoe Sprint"
 	case "DIV":
 		return "Diving"
+	case "SAL":
+		return "Sailing"
 	default:
 		return "Unknown"
 	}

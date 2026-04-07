@@ -1,0 +1,31 @@
+{
+  "allowedSports": [
+    "Athletics",
+    "Cricket",
+    "Tennis",
+    "Swimming",
+    "Sailing (Windsurfing & Kite)"
+  ],
+  "sportPriority": [
+    "Cricket",
+    "Athletics",
+    "Tennis",
+    "Swimming",
+    "Sailing (Windsurfing & Kite)"
+  ],
+  "allowedDays": [
+    "Friday",
+    "Saturday",
+    "Sunday",
+    "Monday"
+  ],
+  "rules": {
+    "noSameSportAcrossDays": true,
+    "preferDayPairs": [
+      ["Saturday", "Sunday"],
+      ["Friday", "Saturday"],
+      ["Sunday", "Monday"]
+    ],
+    "sportSpecific": {}
+  }
+}

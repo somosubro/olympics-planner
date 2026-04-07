@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Olympics Schedule Planner API smoke test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 56rem; margin: 1rem auto; padding: 0 1rem; }
+    pre { background: #f4f4f4; padding: 0.75rem; overflow: auto; max-height: 24rem; }
+    button { margin-right: 0.5rem; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>API smoke test</h1>
+  <p>Run <code>make run</code> (or <code>go run ./cmd/api</code>), then use the buttons. Default base URL:</p>
+  <p><input id="base" size="48" value="http://localhost:8080" /></p>
+  <p>
+    <button type="button" id="health">GET /api/v1/health</button>
+    <button type="button" id="sessions">GET /api/v1/sessions (first 5)</button>
+  </p>
+  <pre id="out">(response will appear here)</pre>
+  <script>
+    const out = document.getElementById("out");
+    const base = () => document.getElementById("base").value.replace(/\/$/, "");
+    async function run(path) {
+      out.textContent = "Loading…";
+      try {
+        const r = await fetch(base() + path);
+        const text = await r.text();
+        out.textContent = r.status + " " + r.statusText + "\n\n" + text;
+      } catch (e) {
+        out.textContent = String(e);
+      }
+    }
+    document.getElementById("health").onclick = () => run("/api/v1/health");
+    document.getElementById("sessions").onclick = () => run("/api/v1/sessions");
+  </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+%% System context — containers (see docs/architecture.md §14.1)
+flowchart TB
+  subgraph people [People_and_clients]
+    User[User]
+  end
+  subgraph orch [Orchestration_not_in_HTTP_path]
+    App[GPT_or_application_layer]
+  end
+  subgraph svc [Correctness_backend]
+    API["HTTP_API_/api/v1"]
+  end
+  subgraph tools [Offline]
+    Importer[import_sessions_CLI]
+  end
+  subgraph store [Artifacts]
+    SessionsFile[("data/sessions.json (array)")]
+    PrefsFile[("preferences.json")]
+  end
+  User --> App
+  App -->|"JSON_over_HTTP"| API
+  API --> SessionsFile
+  API --> PrefsFile
+  Importer -->|"writes"| SessionsFile

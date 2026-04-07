@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Planner preferences builder</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; line-height: 1.45; }
+    body { max-width: 44rem; margin: 0 auto; padding: 1rem 1.25rem 3rem; color: #1a1a1a; }
+    h1 { font-size: 1.35rem; }
+    h2 { font-size: 1.05rem; margin-top: 1.5rem; }
+    label { display: block; font-weight: 600; margin-top: 0.75rem; }
+    .hint { font-size: 0.88rem; font-weight: normal; color: #444; }
+    input[type="text"], textarea { width: 100%; max-width: 100%; box-sizing: border-box; padding: 0.4rem 0.5rem; margin-top: 0.25rem; }
+    textarea { min-height: 5rem; font-family: ui-monospace, monospace; font-size: 0.9rem; }
+    fieldset { border: 1px solid #ccc; border-radius: 6px; padding: 0.75rem 1rem; margin-top: 0.75rem; }
+    legend { font-weight: 600; padding: 0 0.35rem; }
+    .days label { display: inline-block; font-weight: normal; margin-right: 0.75rem; margin-top: 0.35rem; }
+    .pairs label { display: block; font-weight: normal; margin-top: 0.35rem; }
+    .actions { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    button { padding: 0.45rem 0.85rem; cursor: pointer; }
+    #out { margin-top: 1rem; min-height: 12rem; }
+    a { color: #0b5; }
+    .banner { background: #f0f7f2; border: 1px solid #c5ddcc; border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>Create your planner preferences</h1>
+  <p class="banner">
+    This page helps you build valid JSON for <strong>preferences</strong> (see <a href="docs/preferences-guide.md">docs/preferences-guide.md</a>).
+    Save the result as <code>data/preferences.json</code> or paste it into API calls. Sport names should match your imported <code>sessions.json</code>.
+  </p>
+
+  <h2>1. Allowed sports</h2>
+  <label for="allowed">Comma-separated <span class="hint">— sports you are willing to attend</span></label>
+  <input type="text" id="allowed" value="Tennis, Athletics, Swimming" />
+
+  <h2>2. Sport priority (most wanted first)</h2>
+  <label for="priority">One sport per line <span class="hint">— top = highest priority for ranking</span></label>
+  <textarea id="priority" rows="5">Tennis
+Athletics
+Swimming</textarea>
+
+  <h2>3. Allowed days</h2>
+  <fieldset class="days">
+    <legend>Weekdays in play</legend>
+    <label><input type="checkbox" class="day" value="Monday" /> Monday</label>
+    <label><input type="checkbox" class="day" value="Tuesday" /> Tuesday</label>
+    <label><input type="checkbox" class="day" value="Wednesday" /> Wednesday</label>
+    <label><input type="checkbox" class="day" value="Thursday" /> Thursday</label>
+    <label><input type="checkbox" class="day" value="Friday" checked /> Friday</label>
+    <label><input type="checkbox" class="day" value="Saturday" checked /> Saturday</label>
+    <label><input type="checkbox" class="day" value="Sunday" checked /> Sunday</label>
+  </fieldset>
+
+  <h2>4. Rules</h2>
+  <label><input type="checkbox" id="noRepeat" checked /> <strong>No same sport across different days</strong>
+    <span class="hint">— invalidates multi-day plans that repeat a sport when enabled</span>
+  </label>
+
+  <fieldset class="pairs">
+    <legend>Preferred day pairs (for plan ranking)</legend>
+    <p class="hint">Optional. Check combinations you like for two-day (or multi-day) trips.</p>
+    <label><input type="checkbox" class="pair" data-a="Saturday" data-b="Sunday" checked /> Saturday + Sunday (classic weekend)</label>
+    <label><input type="checkbox" class="pair" data-a="Friday" data-b="Saturday" /> Friday + Saturday</label>
+    <label><input type="checkbox" class="pair" data-a="Sunday" data-b="Monday" /> Sunday + Monday</label>
+    <label><input type="checkbox" class="pair" data-a="Friday" data-b="Sunday" /> Friday + Sunday</label>
+    <label><input type="checkbox" class="pair" data-a="Saturday" data-b="Monday" /> Saturday + Monday</label>
+  </fieldset>
+
+  <div class="actions">
+    <button type="button" id="gen">Generate JSON</button>
+    <button type="button" id="copy">Copy to clipboard</button>
+    <button type="button" id="dl">Download preferences.json</button>
+  </div>
+
+  <label for="out">Output</label>
+  <textarea id="out" readonly rows="16" spellcheck="false"></textarea>
+
+  <p class="hint">Empty <code>allowedSports</code> or <code>allowedDays</code> means “allow none” in the scoring spec—always set at least one day and one sport for real trips.</p>
+
+  <script>
+    function splitSports(str) {
+      return str.split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+    }
+    function lines(str) {
+      return str.split("\n").map((s) => s.trim()).filter(Boolean);
+    }
+    function build() {
+      const allowed = splitSports(document.getElementById("allowed").value);
+      let priority = lines(document.getElementById("priority").value);
+      if (priority.length === 0) priority = allowed.slice();
+      const days = Array.from(document.querySelectorAll(".day:checked")).map((c) => c.value);
+      const noRepeat = document.getElementById("noRepeat").checked;
+      const pairs = Array.from(document.querySelectorAll(".pair:checked")).map((c) => [
+        c.getAttribute("data-a"),
+        c.getAttribute("data-b"),
+      ]);
+      const obj = {
+        allowedSports: allowed,
+        sportPriority: priority,
+        allowedDays: days,
+        rules: {
+          noSameSportAcrossDays: noRepeat,
+          preferDayPairs: pairs,
+          sportSpecific: {},
+        },
+      };
+      return JSON.stringify(obj, null, 2);
+    }
+    document.getElementById("gen").onclick = () => {
+      document.getElementById("out").value = build();
+    };
+    document.getElementById("copy").onclick = async () => {
+      const t = document.getElementById("out");
+      if (!t.value) document.getElementById("gen").click();
+      await navigator.clipboard.writeText(t.value);
+    };
+    document.getElementById("dl").onclick = () => {
+      if (!document.getElementById("out").value) document.getElementById("gen").click();
+      const blob = new Blob([document.getElementById("out").value], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "preferences.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+    document.getElementById("gen").click();
+  </script>
+</body>
+</html>

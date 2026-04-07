@@ -1,4 +1,4 @@
-APP_NAME=olympics-planner
+APP_NAME=olympics-schedule-planner
 
 .PHONY: run test test-race lint fmt tidy build
 

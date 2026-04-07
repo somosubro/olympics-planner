@@ -1,0 +1,10 @@
+# Limit what `gcloud run deploy --source .` uploads. Always run deploy from this repo root, not from ~ .
+.git
+.gitignore
+.gcloudignore
+.dockerignore
+docs/
+testdata/
+bin/
+terminals/
+**/*_test.go

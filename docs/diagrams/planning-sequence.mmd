@@ -1,0 +1,14 @@
+%% Planning flow — sequence (see docs/architecture.md §14.2)
+sequenceDiagram
+  participant U as User
+  participant O as GPT_or_app
+  participant A as Backend_API
+  participant D as Session_dataset
+  U->>O: Natural_language_request
+  O->>O: Merge_overrides_into_preferences
+  O->>O: Build_plan_candidates_ids
+  O->>A: POST_validate_or_rank_plans
+  A->>D: Load_resolve_Session_ids
+  D-->>A: Session_rows
+  A-->>O: Validation_errors_and_or_scores
+  O-->>U: Explanation_and_plan_options

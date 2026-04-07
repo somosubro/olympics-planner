@@ -1,24 +1,24 @@
 package main
 
 import (
-    "log/slog"
-    "net/http"
-    "os"
+	"log/slog"
+	"net/http"
+	"os"
 
-    "olympics-planner/internal/config"
-    apphttp "olympics-planner/internal/transport/http"
+	"olympics-planner/internal/config"
+	apphttp "olympics-planner/internal/transport/http"
 )
 
 func main() {
-    cfg := config.Load()
+	cfg := config.Load()
 
-    logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-    logger.Info("starting olympics planner api", "port", cfg.Port)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger.Info("starting olympics schedule planner api", "port", cfg.Port)
 
-    router := apphttp.NewRouter(logger)
+	router := apphttp.NewRouter(logger, cfg)
 
-    if err := http.ListenAndServe(":"+cfg.Port, router); err != nil {
-        logger.Error("server stopped", "error", err)
-        os.Exit(1)
-    }
+	if err := http.ListenAndServe(":"+cfg.Port, router); err != nil {
+		logger.Error("server stopped", "error", err)
+		os.Exit(1)
+	}
 }

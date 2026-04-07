@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"olympics-planner/internal/ingest/pipeline"
 )
@@ -34,12 +35,12 @@ func runImportPDF(args []string) {
 		fatal(errors.New("-pdf is required"))
 	}
 
-	sessions, err := pipeline.ImportFromPDF(*pdfPath, *outPath)
+	res, err := pipeline.ImportFromPDF(*pdfPath, *outPath)
 	if err != nil {
 		fatal(err)
 	}
 
-	fmt.Printf("Imported %d sessions into %s\n", len(sessions), *outPath)
+	printImportResult(res, *outPath)
 }
 
 func runImportText(args []string) {
@@ -52,12 +53,34 @@ func runImportText(args []string) {
 		fatal(errors.New("-text is required"))
 	}
 
-	sessions, err := pipeline.ImportFromText(*textPath, *outPath)
+	res, err := pipeline.ImportFromText(*textPath, *outPath)
 	if err != nil {
 		fatal(err)
 	}
 
-	fmt.Printf("Imported %d sessions into %s\n", len(sessions), *outPath)
+	printImportResult(res, *outPath)
+}
+
+func printImportResult(res pipeline.ImportResult, outPath string) {
+	fmt.Printf("Imported %d sessions into %s\n", res.Stats.Emitted, outPath)
+	fmt.Fprintf(os.Stderr, "parse: %d lines scanned, %d schedule rows matched\n",
+		res.Stats.LinesScanned, res.Stats.ParseRowMatches)
+	if res.Stats.DroppedInvalid > 0 {
+		fmt.Fprintf(os.Stderr, "dropped %d invalid session(s) (failed required-field checks)\n", res.Stats.DroppedInvalid)
+		for _, d := range res.InvalidDrops {
+			ref := d.SessionCode
+			if ref == "" {
+				ref = d.ID
+			}
+			if d.ID != "" && d.SessionCode != "" && d.ID != d.SessionCode {
+				ref = fmt.Sprintf("%s (id=%s)", d.SessionCode, d.ID)
+			}
+			fmt.Fprintf(os.Stderr, "  - %s: %s\n", ref, strings.Join(d.Issues, "; "))
+		}
+	}
+	if res.Stats.DuplicateIDsSkipped > 0 {
+		fmt.Fprintf(os.Stderr, "skipped %d duplicate session id(s)\n", res.Stats.DuplicateIDsSkipped)
+	}
 }
 
 func usageAndExit() {

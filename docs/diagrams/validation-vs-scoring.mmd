@@ -1,0 +1,11 @@
+%% Validation vs scoring — conceptual (see docs/architecture.md §14.3)
+flowchart TD
+  In[Input_sessions_or_plans]
+  V{Validation}
+  Reject[Invalid_rejected_or_errors_returned]
+  S[Scoring_rank_only_valid]
+  Out[Ranked_or_validated_output]
+  In --> V
+  V -->|fails_hard_rules| Reject
+  V -->|passes| S
+  S --> Out

@@ -33,20 +33,21 @@ var dateOnlyRe = regexp.MustCompile(`^([A-Za-z]+),\s+([A-Za-z]+)\s+(\d{1,2})$`)
 
 // ParseScheduleTextFile reads text produced by pdftotext -layout from the LA28
 // "Competition Schedule by Event" PDF and returns sessions in domain form.
-func ParseScheduleTextFile(path string) ([]domain.Session, error) {
+func ParseScheduleTextFile(path string) ([]domain.Session, ParseStats, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, ParseStats{}, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	return ParseScheduleText(f)
 }
 
 // ParseScheduleText parses schedule text from any reader containing pdftotext
 // -layout output for the LA28 schedule PDF.
-func ParseScheduleText(r io.Reader) ([]domain.Session, error) {
+func ParseScheduleText(r io.Reader) ([]domain.Session, ParseStats, error) {
 	var sessions []domain.Session
+	var stats ParseStats
 	scanner := bufio.NewScanner(r)
 
 	type acc struct {
@@ -79,6 +80,7 @@ func ParseScheduleText(r io.Reader) ([]domain.Session, error) {
 	}
 
 	for scanner.Scan() {
+		stats.LinesScanned++
 		line := scanner.Text()
 		norm := transform.NormalizeWhitespace(line)
 		if norm == "" {
@@ -100,6 +102,7 @@ func ParseScheduleText(r io.Reader) ([]domain.Session, error) {
 
 		m := rowRe.FindStringSubmatch(line)
 		if m != nil {
+			stats.RowMatches++
 			flush()
 
 			sport := transform.NormalizeWhitespace(m[1])
@@ -139,11 +142,11 @@ func ParseScheduleText(r io.Reader) ([]domain.Session, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, err
+		return nil, stats, err
 	}
 
 	flush()
-	return sessions, nil
+	return sessions, stats, nil
 }
 
 func sessionTitle(events []string, sport, code string) string {

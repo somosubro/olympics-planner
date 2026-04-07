@@ -1,0 +1,383 @@
+openapi: 3.1.0
+info:
+  title: Olympics Schedule Planner API
+  description: |
+    Correctness layer for LA28 Olympic session plans. Retrieve sessions, validate plans,
+    and rank sessions or plans using user preferences. Does not generate plans—you assemble
+    plans from real session IDs, then validate/rank here.
+  version: "1.0.0"
+# Base URL for all paths below — replace YOUR_API_HOST (no trailing slash).
+servers:
+  - url: https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app
+    description: Replace with your deployed API base (no trailing slash). For local dev use an HTTPS tunnel (e.g. ngrok) — ChatGPT requires HTTPS.
+
+paths:
+  /api/v1/health:
+    get:
+      operationId: healthCheck
+      summary: Liveness check
+      responses:
+        "200":
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /api/v1/sessions:
+    get:
+      operationId: listSessions
+      summary: List sessions from the canonical schedule (optional filters)
+      description: |
+        Returns sessions after filters. Use sport names and days that exist in the dataset.
+        Combine filters to narrow candidates before building plans.
+      parameters:
+        - name: date
+          in: query
+          required: false
+          description: Calendar date YYYY-MM-DD. Repeat param or comma-separated for multiple.
+          schema:
+            type: string
+        - name: dayOfWeek
+          in: query
+          required: false
+          description: e.g. Saturday, Sunday. Repeat or comma-separated.
+          schema:
+            type: string
+        - name: sports
+          in: query
+          required: false
+          description: Sport filter. Repeat or comma-separated.
+          schema:
+            type: string
+        - name: allowedSports
+          in: query
+          required: false
+          description: Hard allowlist of sports.
+          schema:
+            type: string
+        - name: excludedSports
+          in: query
+          required: false
+          description: Hard denylist of sports.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Filtered session list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionsResponse"
+        "400":
+          description: Bad query parameters
+
+  /api/v1/validate:
+    post:
+      operationId: validatePlan
+      summary: Validate a plan against schedule data and preferences
+      description: |
+        Returns whether the plan satisfies hard rules. Unknown session IDs yield validation errors in the body (HTTP 200).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidateRequest"
+      responses:
+        "200":
+          description: Validation outcome
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+        "400":
+          description: Malformed JSON or missing required fields
+
+  /api/v1/rank/sessions:
+    post:
+      operationId: rankSessions
+      summary: Rank candidate sessions by preferences
+      description: |
+        Supply full Session objects (e.g. from listSessions). Sessions that fail rankability checks are omitted from rankedSessions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RankSessionsRequest"
+      responses:
+        "200":
+          description: Sessions sorted by score descending
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RankSessionsResponse"
+        "400":
+          description: Malformed request
+
+  /api/v1/rank/plans:
+    post:
+      operationId: rankPlans
+      summary: Rank candidate plans (session IDs resolved server-side)
+      description: |
+        Plans must use primarySessionId values that exist in the server's session dataset.
+        Invalid plans are excluded from ranked output unless includeInvalidPlans is true.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RankPlansRequest"
+      responses:
+        "200":
+          description: Valid plans sorted by score descending
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RankPlansResponse"
+        "400":
+          description: Malformed request
+
+components:
+  schemas:
+    Session:
+      type: object
+      required:
+        - id
+        - sport
+        - sessionCode
+        - date
+        - dayOfWeek
+        - startTime
+        - venue
+      properties:
+        id:
+          type: string
+        sport:
+          type: string
+        sessionCode:
+          type: string
+        title:
+          type: string
+        date:
+          type: string
+          description: YYYY-MM-DD
+        dayOfWeek:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        venue:
+          type: string
+        includedEvents:
+          type: array
+          items:
+            type: string
+
+    SessionsResponse:
+      type: object
+      required:
+        - sessions
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Session"
+
+    Preferences:
+      type: object
+      required:
+        - allowedSports
+        - sportPriority
+        - allowedDays
+        - rules
+      properties:
+        allowedSports:
+          type: array
+          items:
+            type: string
+          description: Empty means allow none for scoring—use non-empty lists for real use.
+        sportPriority:
+          type: array
+          items:
+            type: string
+          description: Higher priority earlier in the list.
+        allowedDays:
+          type: array
+          items:
+            type: string
+        rules:
+          $ref: "#/components/schemas/Rules"
+
+    Rules:
+      type: object
+      required:
+        - noSameSportAcrossDays
+      properties:
+        noSameSportAcrossDays:
+          type: boolean
+        preferDayPairs:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+          description: Pairs of weekday names, e.g. [["Saturday","Sunday"]]
+        sportSpecific:
+          type: object
+          additionalProperties: true
+
+    Plan:
+      type: object
+      required:
+        - planType
+        - days
+      properties:
+        planType:
+          type: string
+          enum:
+            - one_day
+            - two_day
+            - multi_day
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanDay"
+
+    PlanDay:
+      type: object
+      required:
+        - date
+        - dayOfWeek
+        - primarySessionId
+        - alternateSessionIds
+      properties:
+        date:
+          type: string
+        dayOfWeek:
+          type: string
+        primarySessionId:
+          type: string
+        alternateSessionIds:
+          type: array
+          items:
+            type: string
+
+    ValidateRequest:
+      type: object
+      required:
+        - plan
+        - preferences
+      properties:
+        plan:
+          $ref: "#/components/schemas/Plan"
+        preferences:
+          $ref: "#/components/schemas/Preferences"
+
+    ValidationResult:
+      type: object
+      required:
+        - valid
+        - errors
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+              field:
+                type: string
+
+    RankSessionsRequest:
+      type: object
+      required:
+        - sessions
+        - preferences
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Session"
+        preferences:
+          $ref: "#/components/schemas/Preferences"
+        includeScoreBreakdown:
+          type: boolean
+
+    RankSessionsResponse:
+      type: object
+      required:
+        - rankedSessions
+      properties:
+        rankedSessions:
+          type: array
+          items:
+            type: object
+            properties:
+              session:
+                $ref: "#/components/schemas/Session"
+              score:
+                type: integer
+              components:
+                type: object
+                properties:
+                  sportPriority:
+                    type: integer
+                  dataQuality:
+                    type: integer
+
+    RankPlansRequest:
+      type: object
+      required:
+        - plans
+        - preferences
+      properties:
+        plans:
+          type: array
+          items:
+            $ref: "#/components/schemas/Plan"
+        preferences:
+          $ref: "#/components/schemas/Preferences"
+        includeScoreBreakdown:
+          type: boolean
+        includeInvalidPlans:
+          type: boolean
+
+    RankPlansResponse:
+      type: object
+      properties:
+        plans:
+          type: array
+          items:
+            type: object
+            properties:
+              plan:
+                $ref: "#/components/schemas/Plan"
+              score:
+                type: integer
+              components:
+                type: object
+                properties:
+                  dayPair:
+                    type: integer
+                  summedSessionScore:
+                    type: integer
+                  variety:
+                    type: integer
+                  convenience:
+                    type: integer
+        invalidPlans:
+          type: array
+          items:
+            type: object
