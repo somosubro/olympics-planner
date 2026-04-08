@@ -447,11 +447,11 @@ If `noSameSportAcrossDays = true`, the same sport must not appear across differe
 
 #### Pass
 - Saturday Tennis + Sunday Athletics (no sport repeats across days)
-- Saturday Cricket + Sunday Swimming (different sports each day)
+- Saturday Diving + Sunday Swimming (different sports each day)
 
 #### Fail
 - Saturday Tennis + Sunday Tennis (any combination of primary/alternate slots)
-- Saturday Cricket primary + Sunday Tennis primary + Sunday Cricket alternate (cricket appears on two calendar days)
+- Saturday Athletics primary + Sunday Tennis primary + Sunday Athletics alternate (athletics appears on two calendar days)
 
 This rule applies to **primary and alternate** session slots so add-ons cannot repeat a sport on another day.
 
@@ -648,10 +648,10 @@ Given `N` allowed sports in priority order:
 - middle sports are linearly distributed between them
 
 Example with 4 sports:
-1. Cricket -> 30
+1. Tennis -> 30
 2. Athletics -> 22
 3. Swimming -> 14
-4. Tennis -> 6
+4. Diving -> 6
 
 The exact mapping function may be implemented programmatically, but it must remain deterministic.
 

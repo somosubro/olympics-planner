@@ -242,7 +242,7 @@ then it must be promoted into the canonical runtime contract in this document.
 ### 8.1 Sport
 `sport` must be normalized to a stable human-readable canonical value, for example:
 - `Athletics`
-- `Cricket`
+- `Diving`
 - `Swimming`
 - `Tennis`
 - `Field Hockey`
@@ -356,7 +356,7 @@ This filter object defines the intended service/API shape; a matching Go domain 
   "daysOfWeek": ["Saturday", "Sunday"],
   "sports": ["Athletics", "Tennis"],
   "allowedSports": ["Athletics", "Tennis"],
-  "excludedSports": ["Cricket"]
+  "excludedSports": ["Baseball"]
 }
 ```
 
@@ -596,7 +596,7 @@ For MVP:
 ```json
 {
   "code": "DISALLOWED_SPORT",
-  "message": "Cricket is not allowed for this request.",
+  "message": "Basketball is not allowed for this request.",
   "field": "sport"
 }
 ```

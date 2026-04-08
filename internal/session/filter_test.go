@@ -23,10 +23,10 @@ func TestApplyFilter_DateAndSport(t *testing.T) {
 
 func TestApplyFilter_ExcludedSports(t *testing.T) {
 	sessions := []domain.Session{
-		{ID: "a", Sport: "Cricket"},
+		{ID: "a", Sport: "Baseball"},
 		{ID: "b", Sport: "Tennis"},
 	}
-	f := Filter{ExcludedSports: []string{"Cricket"}}
+	f := Filter{ExcludedSports: []string{"Baseball"}}
 	out := ApplyFilter(sessions, f)
 	if len(out) != 1 || out[0].ID != "b" {
 		t.Fatalf("got %#v", out)

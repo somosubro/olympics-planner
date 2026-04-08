@@ -21,11 +21,11 @@ const (
 // Use either legacy shape (primarySessionId + optional alternateSessionIds) or
 // sessionIds (non-empty list of co-equal same-day sessions). Do not combine both on one day.
 type PlanDay struct {
-	Date                 string   `json:"date"`
-	DayOfWeek            string   `json:"dayOfWeek"`
-	PrimarySessionID     string   `json:"primarySessionId,omitempty"`
-	AlternateSessionIDs  []string `json:"alternateSessionIds,omitempty"`
-	SessionIDs           []string `json:"sessionIds,omitempty"`
+	Date                string   `json:"date"`
+	DayOfWeek           string   `json:"dayOfWeek"`
+	PrimarySessionID    string   `json:"primarySessionId,omitempty"`
+	AlternateSessionIDs []string `json:"alternateSessionIds,omitempty"`
+	SessionIDs          []string `json:"sessionIds,omitempty"`
 }
 
 // EffectiveSessionIDs lists every session id scheduled for this calendar day.

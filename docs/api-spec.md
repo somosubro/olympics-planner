@@ -311,14 +311,14 @@ Conversational or request-specific overrides (for example “avoid cricket”) a
       {
         "date": "2028-07-16",
         "dayOfWeek": "Sunday",
-        "primarySessionId": "session-ckt-03",
-        "alternateSessionIds": ["session-div-02"]
+        "primarySessionId": "session-div-03",
+        "alternateSessionIds": ["session-swm-02"]
       }
     ]
   },
   "preferences": {
-    "allowedSports": ["Tennis", "Cricket", "Athletics", "Diving"],
-    "sportPriority": ["Cricket", "Athletics", "Tennis", "Diving"],
+    "allowedSports": ["Tennis", "Athletics", "Diving", "Swimming"],
+    "sportPriority": ["Diving", "Athletics", "Tennis", "Swimming"],
     "allowedDays": ["Friday", "Saturday", "Sunday", "Monday"],
     "rules": {
       "noSameSportAcrossDays": true,
@@ -564,8 +564,8 @@ It does **not** generate plans.
     }
   ],
   "preferences": {
-    "allowedSports": ["Athletics", "Tennis", "Cricket", "Diving"],
-    "sportPriority": ["Cricket", "Athletics", "Tennis", "Diving"],
+    "allowedSports": ["Athletics", "Tennis", "Diving", "Swimming"],
+    "sportPriority": ["Diving", "Athletics", "Tennis", "Swimming"],
     "allowedDays": ["Friday", "Saturday", "Sunday", "Monday"],
     "rules": {
       "noSameSportAcrossDays": true,

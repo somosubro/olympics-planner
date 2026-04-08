@@ -48,7 +48,7 @@ You do **not** have to use Lambda. A **container** (Dockerfile in repo) on Cloud
 
 ### Optional web browsing (trip context)
 
-The **instructions** spell out **hard rules**: **no** schedule from “official LA28 pages” or web; **`listSessions` before Search** for cricket/tickets/groups; **no** plan specifics without **`session.id`** from the API. **Web** only **after** sessions load, for rough pricing/hospitality (+ citations). If the model still browses first, use **`configure-gpt.md` Option B** (turn Web **off**). See **§E2** there (**Option A** vs **B**).
+The **instructions** spell out **hard rules**: **no** schedule from “official LA28 pages” or web; **`listSessions` before Search** for sessions/tickets/groups; **no** plan specifics without **`session.id`** from the API. **Web** only **after** sessions load, for rough pricing/hospitality (+ citations). If the model still browses first, use **`configure-gpt.md` Option B** (turn Web **off**). See **§E2** there (**Option A** vs **B**).
 
 ## Import LA28 schedule (CLI)
 

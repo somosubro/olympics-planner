@@ -396,7 +396,7 @@ You should still add **narrow, chunk-scoped tests** while implementing chunks 1â
 - add regression scenarios:
   - best weekend candidate set
   - Saturday only
-  - avoid cricket
+  - excluded-sport preference override
   - repeated sport invalidation
   - malformed query params
 - harden logs and diagnostics

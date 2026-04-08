@@ -36,27 +36,27 @@ func TestValidatePlan_RejectsRepeatedSportAcrossDays(t *testing.T) {
 }
 
 func TestValidatePlan_RejectsSameSportPrimaryOneDayAlternateOtherDay(t *testing.T) {
-	// Cricket on day 1 primary; cricket again on day 2 as an alternate — must fail when rule is on.
+	// Same sport on day 1 primary and again on day 2 as an alternate — must fail when rule is on.
 	sessions := []domain.Session{
-		{ID: "ckt-d1", Sport: "Cricket", SessionCode: "CK1", Date: "2028-07-22", DayOfWeek: "Saturday", StartTime: "09:00", EndTime: "12:00", Venue: "Pomona"},
+		{ID: "ath-d1", Sport: "Athletics", SessionCode: "A1", Date: "2028-07-22", DayOfWeek: "Saturday", StartTime: "09:00", EndTime: "12:00", Venue: "Pomona"},
 		{ID: "ten-d2", Sport: "Tennis", SessionCode: "TN1", Date: "2028-07-23", DayOfWeek: "Sunday", StartTime: "11:00", EndTime: "13:00", Venue: "Carson"},
-		{ID: "ckt-d2", Sport: "Cricket", SessionCode: "CK2", Date: "2028-07-23", DayOfWeek: "Sunday", StartTime: "18:00", EndTime: "21:00", Venue: "Pomona"},
+		{ID: "ath-d2", Sport: "Athletics", SessionCode: "A2", Date: "2028-07-23", DayOfWeek: "Sunday", StartTime: "18:00", EndTime: "21:00", Venue: "LA Coliseum"},
 	}
 	prefs := domain.Preferences{
-		AllowedSports: []string{"Cricket", "Tennis"},
+		AllowedSports: []string{"Athletics", "Tennis"},
 		AllowedDays:   []string{"Saturday", "Sunday"},
 		Rules:         domain.Rules{},
 	}
 	plan := domain.Plan{
 		PlanType: domain.PlanTypeTwoDay,
 		Days: []domain.PlanDay{
-			{Date: "2028-07-22", DayOfWeek: "Saturday", PrimarySessionID: "ckt-d1", AlternateSessionIDs: nil},
-			{Date: "2028-07-23", DayOfWeek: "Sunday", PrimarySessionID: "ten-d2", AlternateSessionIDs: []string{"ckt-d2"}},
+			{Date: "2028-07-22", DayOfWeek: "Saturday", PrimarySessionID: "ath-d1", AlternateSessionIDs: nil},
+			{Date: "2028-07-23", DayOfWeek: "Sunday", PrimarySessionID: "ten-d2", AlternateSessionIDs: []string{"ath-d2"}},
 		},
 	}
 	result := ValidatePlan(plan, sessions, prefs)
 	if result.Valid {
-		t.Fatalf("expected plan invalid: cricket repeats across days via alternate")
+		t.Fatalf("expected plan invalid: same sport repeats across days via alternate")
 	}
 	if !hasCode(result.Errors, "REPEATED_SPORT_ACROSS_DAYS") {
 		t.Fatalf("expected REPEATED_SPORT_ACROSS_DAYS, got %#v", result.Errors)
@@ -90,11 +90,11 @@ func TestValidatePlan_SessionNotFound(t *testing.T) {
 func TestValidatePlan_SessionIDsMode_TwoSportsSameDay(t *testing.T) {
 	sessions := []domain.Session{
 		{ID: "equ-a", Sport: "Equestrian", SessionCode: "E1", Date: "2028-07-15", DayOfWeek: "Saturday", StartTime: "09:00", EndTime: "11:45", Venue: "V1"},
-		{ID: "ckt-b", Sport: "Cricket", SessionCode: "C1", Date: "2028-07-15", DayOfWeek: "Saturday", StartTime: "18:00", EndTime: "21:30", Venue: "V2"},
+		{ID: "div-b", Sport: "Diving", SessionCode: "D1", Date: "2028-07-15", DayOfWeek: "Saturday", StartTime: "18:00", EndTime: "21:30", Venue: "V2"},
 		{ID: "ten-c", Sport: "Tennis", SessionCode: "T1", Date: "2028-07-16", DayOfWeek: "Sunday", StartTime: "11:00", EndTime: "13:00", Venue: "V3"},
 	}
 	prefs := domain.Preferences{
-		AllowedSports: []string{"Equestrian", "Cricket", "Tennis"},
+		AllowedSports: []string{"Equestrian", "Diving", "Tennis"},
 		AllowedDays:   []string{"Saturday", "Sunday"},
 		Rules:         domain.Rules{},
 	}
@@ -104,7 +104,7 @@ func TestValidatePlan_SessionIDsMode_TwoSportsSameDay(t *testing.T) {
 			{
 				Date:       "2028-07-15",
 				DayOfWeek:  "Saturday",
-				SessionIDs: []string{"equ-a", "ckt-b"},
+				SessionIDs: []string{"equ-a", "div-b"},
 			},
 			{
 				Date:             "2028-07-16",
