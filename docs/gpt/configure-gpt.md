@@ -49,15 +49,13 @@ Optional **Knowledge** uploads: [`user-readme.md`](user-readme.md), [`preset-pla
 
 ---
 
-## E2. Capabilities — disable web search / browsing (strongly recommended)
+## E2. Capabilities — web search / browsing (choose one posture)
 
-If the GPT editor offers **Web**, **Search**, **Browse**, or **Use web sources**, turn it **OFF** for this planner.
+**Option A (recommended for “trip assistant”):** Turn **Web** / **Search** / **Browse** **ON**. Instructions in [`instructions.md`](instructions.md) now **layer** behavior: **schedule** (IDs, times, venues, calendar) stays **Actions-only**; **web** is allowed **only** for non-schedule context (rough pricing discussion, fan/social chatter, hotels)—with citations and “verify official” disclaimers. You accept some risk the model still browses when it shouldn’t; **`instructions.md`** tightens that.
 
-When web is **on**, the model often runs long multi-site searches instead of calling your **Actions** API, invents or mismatches session codes, and is **slow**. Schedule data is **API-only**—see [`instructions.md`](instructions.md) “Data source (API only—no web)”.
+**Option B (maximum schedule purity):** Turn **Web** **OFF**. Fastest, least drift on session codes; no Reddit/pricing context from the model.
 
-(Exact labels vary by ChatGPT version; look under **Configure** → capabilities or advanced settings.)
-
-**Optional web for pricing/social context:** use a **separate** branch of this repo (e.g. `feature/gpt-optional-web`) that restores the Pattern A instructions; do not mix with `main` unless you accept that risk.
+Exact capability labels vary by ChatGPT version (**Configure** → capabilities or advanced settings).
 
 ---
 
