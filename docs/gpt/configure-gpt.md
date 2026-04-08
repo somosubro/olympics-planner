@@ -51,11 +51,11 @@ Optional **Knowledge** uploads: [`user-readme.md`](user-readme.md), [`preset-pla
 
 ## E2. Capabilities — web search / browsing (choose one posture)
 
-**Option A (recommended for “trip assistant”):** Turn **Web** / **Search** / **Browse** **ON**. Instructions in [`instructions.md`](instructions.md) now **layer** behavior: **schedule** (IDs, times, venues, calendar) stays **Actions-only**; **web** is allowed **only** for non-schedule context (rough pricing discussion, fan/social chatter, hotels)—with citations and “verify official” disclaimers. You accept some risk the model still browses when it shouldn’t; **`instructions.md`** tightens that.
+**Option A (“trip assistant” + optional pricing):** Turn **Web** **ON**. Schedule stays **Actions-only**; web **only after** **`listSessions`** (see **Hard rules** in [`instructions.md`](instructions.md)). Models still sometimes browse **before** calling Actions—if that keeps happening after a full instructions refresh, switch to **Option B**.
 
-**Option B (maximum schedule purity):** Turn **Web** **OFF**. Fastest, least drift on session codes; no Reddit/pricing context from the model.
+**Option B (recommended if browsing derails):** Turn **Web** **OFF**. Schedule and tickets-to-buy plans rely entirely on **`listSessions`** / validate / rank—no Search. Add pricing in a **separate** ChatGPT chat or manually.
 
-Exact capability labels vary by ChatGPT version (**Configure** → capabilities or advanced settings).
+Exact capability labels vary (**Configure** → capabilities).
 
 ---
 
