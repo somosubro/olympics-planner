@@ -65,129 +65,147 @@ func ValidatePlan(plan domain.Plan, sessions []domain.Session, prefs domain.Pref
 
 	allowedSports := toSet(prefs.AllowedSports)
 	allowedDays := toSet(prefs.AllowedDays)
-	seenSportByDay := make(map[string]string)
+
+	var sportFirstDate map[string]string
+	if prefs.Rules.EffectiveNoSameSportAcrossDays() {
+		sportFirstDate = make(map[string]string)
+	}
 
 	seenIDs := make(map[string]struct{})
 
 	for dayIdx, day := range plan.Days {
 		dayField := fmt.Sprintf("days[%d]", dayIdx)
-		if strings.TrimSpace(day.PrimarySessionID) == "" {
-			errs = append(errs, domain.ValidationError{
-				Code:    "EMPTY_DAY_ENTRY",
-				Message: "primarySessionId is required",
-				Field:   dayField + ".primarySessionId",
-			})
-			continue
-		}
 
-		primary, ok := sessionsByID[day.PrimarySessionID]
-		if !ok {
+		sessionIDsMode := len(day.SessionIDs) > 0
+		if sessionIDsMode && (strings.TrimSpace(day.PrimarySessionID) != "" || len(day.AlternateSessionIDs) > 0) {
 			errs = append(errs, domain.ValidationError{
-				Code:    "SESSION_NOT_FOUND",
-				Message: fmt.Sprintf("unknown session id %q", day.PrimarySessionID),
-				Field:   dayField + ".primarySessionId",
-			})
-			continue
-		}
-
-		if _, dup := seenIDs[day.PrimarySessionID]; dup {
-			errs = append(errs, domain.ValidationError{
-				Code:    "DUPLICATE_SESSION",
-				Message: fmt.Sprintf("session id %q appears more than once in the plan", day.PrimarySessionID),
-				Field:   dayField + ".primarySessionId",
-			})
-		} else {
-			seenIDs[day.PrimarySessionID] = struct{}{}
-		}
-
-		if _, ok := allowedSports[primary.Sport]; !ok {
-			errs = append(errs, domain.ValidationError{
-				Code:    "DISALLOWED_SPORT",
-				Message: fmt.Sprintf("sport %q is not allowed for this request", primary.Sport),
-				Field:   dayField + ".primarySessionId",
-			})
-		}
-
-		if _, ok := allowedDays[primary.DayOfWeek]; !ok {
-			errs = append(errs, domain.ValidationError{
-				Code:    "DISALLOWED_DAY",
-				Message: fmt.Sprintf("day %q is not allowed for this request", primary.DayOfWeek),
-				Field:   dayField + ".primarySessionId",
-			})
-		}
-
-		if primary.Date != day.Date || primary.DayOfWeek != day.DayOfWeek {
-			errs = append(errs, domain.ValidationError{
-				Code:    "DATE_DAY_MISMATCH",
-				Message: "primary session date/dayOfWeek does not match plan day",
+				Code:    "CONFLICTING_DAY_SPEC",
+				Message: `use either sessionIds or primarySessionId/alternateSessionIds for a plan day, not both`,
 				Field:   dayField,
 			})
+			continue
 		}
 
-		altSeen := make(map[string]struct{})
-		for _, altID := range day.AlternateSessionIDs {
-			if altID == day.PrimarySessionID {
+		var ids []string
+		if sessionIDsMode {
+			ids = day.SessionIDs
+		} else {
+			if strings.TrimSpace(day.PrimarySessionID) == "" {
 				errs = append(errs, domain.ValidationError{
-					Code:    "INVALID_ALTERNATE",
-					Message: "alternate must not duplicate primary session id",
-					Field:   dayField + ".alternateSessionIds",
+					Code:    "EMPTY_DAY_ENTRY",
+					Message: "primarySessionId is required when sessionIds is omitted",
+					Field:   dayField + ".primarySessionId",
 				})
 				continue
 			}
-			if _, dup := altSeen[altID]; dup {
-				errs = append(errs, domain.ValidationError{
-					Code:    "INVALID_ALTERNATE",
-					Message: "duplicate alternate session id within the same day",
-					Field:   dayField + ".alternateSessionIds",
-				})
-				continue
-			}
-			altSeen[altID] = struct{}{}
+			ids = make([]string, 0, 1+len(day.AlternateSessionIDs))
+			ids = append(ids, day.PrimarySessionID)
+			ids = append(ids, day.AlternateSessionIDs...)
+		}
 
-			if _, dup := seenIDs[altID]; dup {
+		if max, ok := prefs.Rules.EffectiveMaxSessionsPerDay(); ok && len(ids) > max {
+			errs = append(errs, domain.ValidationError{
+				Code:    "TOO_MANY_SESSIONS_PER_DAY",
+				Message: fmt.Sprintf("at most %d session(s) per day allowed for this request", max),
+				Field:   dayField,
+			})
+			continue
+		}
+
+		errDayStart := len(errs)
+		dayLocalSeen := make(map[string]struct{})
+		var sportsThisDay []string
+
+		for i, rawID := range ids {
+			sid := strings.TrimSpace(rawID)
+			field := fieldForPlanDaySession(dayField, sessionIDsMode, i == 0)
+			if sid == "" {
+				errs = append(errs, domain.ValidationError{
+					Code:    "EMPTY_DAY_ENTRY",
+					Message: "session id must not be empty",
+					Field:   field,
+				})
+				continue
+			}
+
+			if _, dup := dayLocalSeen[sid]; dup {
 				errs = append(errs, domain.ValidationError{
 					Code:    "DUPLICATE_SESSION",
-					Message: fmt.Sprintf("session id %q appears more than once in the plan", altID),
-					Field:   dayField + ".alternateSessionIds",
+					Message: fmt.Sprintf("session id %q appears more than once in the plan", sid),
+					Field:   field,
 				})
-			} else {
-				seenIDs[altID] = struct{}{}
+				continue
 			}
+			dayLocalSeen[sid] = struct{}{}
 
-			altSession, ok := sessionsByID[altID]
+			if _, dup := seenIDs[sid]; dup {
+				errs = append(errs, domain.ValidationError{
+					Code:    "DUPLICATE_SESSION",
+					Message: fmt.Sprintf("session id %q appears more than once in the plan", sid),
+					Field:   field,
+				})
+				continue
+			}
+			seenIDs[sid] = struct{}{}
+
+			sess, ok := sessionsByID[sid]
 			if !ok {
 				errs = append(errs, domain.ValidationError{
 					Code:    "SESSION_NOT_FOUND",
-					Message: fmt.Sprintf("unknown session id %q", altID),
-					Field:   dayField + ".alternateSessionIds",
+					Message: fmt.Sprintf("unknown session id %q", sid),
+					Field:   field,
 				})
 				continue
 			}
 
-			if _, ok := allowedSports[altSession.Sport]; !ok {
+			if _, ok := allowedSports[sess.Sport]; !ok {
 				errs = append(errs, domain.ValidationError{
 					Code:    "DISALLOWED_SPORT",
-					Message: fmt.Sprintf("sport %q is not allowed for this request", altSession.Sport),
-					Field:   dayField + ".alternateSessionIds",
+					Message: fmt.Sprintf("sport %q is not allowed for this request", sess.Sport),
+					Field:   field,
 				})
-			} else if _, ok := allowedDays[altSession.DayOfWeek]; !ok {
+			}
+
+			if _, ok := allowedDays[sess.DayOfWeek]; !ok {
 				errs = append(errs, domain.ValidationError{
 					Code:    "DISALLOWED_DAY",
-					Message: fmt.Sprintf("day %q is not allowed for this request", altSession.DayOfWeek),
-					Field:   dayField + ".alternateSessionIds",
+					Message: fmt.Sprintf("day %q is not allowed for this request", sess.DayOfWeek),
+					Field:   field,
 				})
+			}
+
+			if sess.Date != day.Date || sess.DayOfWeek != day.DayOfWeek {
+				errs = append(errs, domain.ValidationError{
+					Code:    "DATE_DAY_MISMATCH",
+					Message: "session date/dayOfWeek does not match plan day",
+					Field:   dayField,
+				})
+			}
+
+			sportsThisDay = append(sportsThisDay, sess.Sport)
+		}
+
+		if len(errs) == errDayStart {
+			if hrs, enforce := prefs.Rules.EffectiveMinHoursBetweenSameDaySessions(); enforce {
+				errs = append(errs, sameDaySpacingErrors(ids, sessionsByID, hrs, dayField)...)
 			}
 		}
 
-		if prefs.Rules.EffectiveNoSameSportAcrossDays() {
-			if prevDay, seen := seenSportByDay[primary.Sport]; seen && prevDay != day.Date {
-				errs = append(errs, domain.ValidationError{
-					Code:    "REPEATED_SPORT_ACROSS_DAYS",
-					Message: fmt.Sprintf("sport %q appears on multiple days where repeated sports are forbidden", primary.Sport),
-					Field:   "days",
-				})
-			} else {
-				seenSportByDay[primary.Sport] = day.Date
+		// noSameSportAcrossDays: same sport must not appear on more than one calendar day
+		// anywhere in the plan (all listed sessions per day).
+		if prefs.Rules.EffectiveNoSameSportAcrossDays() && sportFirstDate != nil {
+			for _, sp := range sportsThisDay {
+				if first, seen := sportFirstDate[sp]; seen {
+					if first != day.Date {
+						errs = append(errs, domain.ValidationError{
+							Code:    "REPEATED_SPORT_ACROSS_DAYS",
+							Message: fmt.Sprintf("sport %q appears on multiple days (including alternates) where repeated sports are forbidden", sp),
+							Field:   "days",
+						})
+					}
+				} else {
+					sportFirstDate[sp] = day.Date
+				}
 			}
 		}
 	}
@@ -196,6 +214,16 @@ func ValidatePlan(plan domain.Plan, sessions []domain.Session, prefs domain.Pref
 		Valid:  len(errs) == 0,
 		Errors: errs,
 	}
+}
+
+func fieldForPlanDaySession(dayField string, sessionIDsMode, isFirst bool) string {
+	if sessionIDsMode {
+		return dayField + ".sessionIds"
+	}
+	if isFirst {
+		return dayField + ".primarySessionId"
+	}
+	return dayField + ".alternateSessionIds"
 }
 
 func toSet(values []string) map[string]struct{} {

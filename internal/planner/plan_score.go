@@ -105,7 +105,18 @@ func unorderedPairKey(a, b string) string {
 func summedSessionComponent(plan domain.Plan, byID map[string]domain.Session, prefs domain.Preferences) int {
 	sum := 0
 	for _, d := range plan.Days {
-		s, ok := byID[d.PrimarySessionID]
+		if d.UsesSessionIDs() {
+			for _, id := range d.EffectiveSessionIDs() {
+				s, ok := byID[id]
+				if !ok {
+					return 0
+				}
+				sc, _ := ScoreSession(s, prefs)
+				sum += sc
+			}
+			continue
+		}
+		s, ok := byID[strings.TrimSpace(d.PrimarySessionID)]
 		if !ok {
 			return 0
 		}
@@ -124,7 +135,8 @@ func varietyComponent(plan domain.Plan, byID map[string]domain.Session) int {
 	}
 	sports := make([]string, 0, len(plan.Days))
 	for _, d := range plan.Days {
-		s, ok := byID[d.PrimarySessionID]
+		fid := d.FirstSessionIDForScoring()
+		s, ok := byID[fid]
 		if !ok {
 			return 0
 		}
@@ -152,12 +164,21 @@ func convenienceComponent(plan domain.Plan, byID map[string]domain.Session) int 
 	}
 	allOK := true
 	for _, d := range plan.Days {
-		s, ok := byID[d.PrimarySessionID]
-		if !ok {
-			return 0
+		if d.UsesSessionIDs() {
+			for _, id := range d.EffectiveSessionIDs() {
+				s, ok := byID[id]
+				if !ok || !startTimeInWindow(s.StartTime, 10, 0, 18, 0) {
+					allOK = false
+					break
+				}
+			}
+		} else {
+			s, ok := byID[strings.TrimSpace(d.PrimarySessionID)]
+			if !ok || !startTimeInWindow(s.StartTime, 10, 0, 18, 0) {
+				allOK = false
+			}
 		}
-		if !startTimeInWindow(s.StartTime, 10, 0, 18, 0) {
-			allOK = false
+		if !allOK {
 			break
 		}
 	}
@@ -260,6 +281,9 @@ func compareRankedPlans(a, b RankedPlan) int {
 			return cb.Convenience - ca.Convenience
 		}
 	}
+	if a.Plan.TotalSessionCount() != b.Plan.TotalSessionCount() {
+		return b.Plan.TotalSessionCount() - a.Plan.TotalSessionCount()
+	}
 	idsA := primaryIDs(a.Plan)
 	idsB := primaryIDs(b.Plan)
 	sort.Strings(idsA)
@@ -270,7 +294,7 @@ func compareRankedPlans(a, b RankedPlan) int {
 func primaryIDs(p domain.Plan) []string {
 	out := make([]string, 0, len(p.Days))
 	for _, d := range p.Days {
-		out = append(out, d.PrimarySessionID)
+		out = append(out, d.FirstSessionIDForScoring())
 	}
 	return out
 }

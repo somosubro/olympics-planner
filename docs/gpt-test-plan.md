@@ -12,14 +12,14 @@
 
 | Item | Value |
 |------|--------|
-| **API base URL** | `https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app` |
+| **API base URL** | `https://olympics-schedule-planner-api-530886147910.us-central1.run.app` |
 | **GPT Actions** | `servers.url` in [`gpt/openapi.yaml`](gpt/openapi.yaml) must equal the URL above (no trailing slash). |
 | **URL stability** | Same Cloud Run service + region → same URL; new service/region/custom domain → update this doc and `openapi.yaml`. |
 
 **Gate (run before any test case):** In a terminal:
 
 ```bash
-curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/health"
+curl -s "https://olympics-schedule-planner-api-530886147910.us-central1.run.app/api/v1/health"
 ```
 
 **Expected:** Response body contains `"status":"ok"` (and HTTP 200).  
@@ -69,7 +69,7 @@ curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/he
 | **Preconditions** | [Gate §0](#0-environment-verify-once-per-test-run) passes. New chat. |
 | **Prompt (copy exactly)** | `Give me all tennis sessions.` |
 | **Expected results** | 1. The assistant invokes a tool that retrieves sessions from the API (e.g. **listSessions**), **or** the reply content is clearly derived from such a call (not pure invention). 2. If the dataset contains Tennis sessions, at least one session shows a **sport** consistent with Tennis and includes a **session id** (or equivalent traceable identifier from the API). 3. The assistant does **not** claim specific sessions, times, or venues that contradict a direct API check (see [Oracle](#oracle-for-tc-101)). |
-| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/sessions?sports=Tennis"` — JSON `sessions` array should match the GPT’s substance (count and ids). |
+| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-530886147910.us-central1.run.app/api/v1/sessions?sports=Tennis"` — JSON `sessions` array should match the GPT’s substance (count and ids). |
 | **Fail if** | No tool/API use and the assistant lists concrete sessions anyway; or sessions listed that do not appear in the curl response. |
 
 ---
@@ -82,7 +82,7 @@ curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/he
 | **Preconditions** | Gate passes. New chat. |
 | **Prompt (copy exactly)** | `List all sessions on Saturday.` |
 | **Expected results** | 1. API-backed retrieval is used (tool or equivalent). 2. Every returned session is for **Saturday** (or the assistant says there are none). 3. No invented Saturday sessions if the API returns empty. |
-| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/sessions?dayOfWeek=Saturday"` |
+| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-530886147910.us-central1.run.app/api/v1/sessions?dayOfWeek=Saturday"` |
 | **Fail if** | Sessions for other days appear as if they were Saturday; or fabricated data when API returns `[]`. |
 
 ---
@@ -95,7 +95,7 @@ curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/he
 | **Preconditions** | Gate passes. New chat. |
 | **Prompt (copy exactly)** | `Show me tennis sessions on Saturday.` |
 | **Expected results** | 1. Retrieval via API/tools. 2. Results are a subset consistent with both Tennis and Saturday (or empty with a clear “none found”). 3. Each shown session includes **includedEvents** listing **verbatim** from API data (no “etc.” or summarized-away events for that session). |
-| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/sessions?sports=Tennis&dayOfWeek=Saturday"` |
+| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-530886147910.us-central1.run.app/api/v1/sessions?sports=Tennis&dayOfWeek=Saturday"` |
 | **Fail if** | Obvious mismatch with curl; or summarized `includedEvents` when the API returned a full list. |
 
 ---
@@ -108,7 +108,7 @@ curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/he
 | **Preconditions** | Gate passes. New chat. |
 | **Prompt (copy exactly)** | `Give me bungee jumping sessions.` |
 | **Expected results** | 1. The assistant uses API-backed lookup **or** explains it will check the schedule. 2. The assistant reports **no bungee jumping sessions** (empty result) **or** explains that sport is not in the data—**not** a fake timetable. 3. **No** plausible-looking fake session rows (no fake ids, venues, or times for bungee jumping). |
-| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/sessions?sports=Bungee%20jumping"` — expect `"sessions":[]` or no matching sport. |
+| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-530886147910.us-central1.run.app/api/v1/sessions?sports=Bungee%20jumping"` — expect `"sessions":[]` or no matching sport. |
 | **Fail if** | Any concrete bungee jumping session is invented without API support. |
 
 ---
@@ -121,7 +121,7 @@ curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/he
 | **Preconditions** | Gate passes. New chat. |
 | **Prompt (copy exactly)** | `List Quidditch sessions for next Friday.` |
 | **Expected results** | 1. No invented Quidditch sessions. 2. Empty or “not in schedule” style answer aligned with API. |
-| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app/api/v1/sessions?sports=Quidditch"` |
+| **Oracle (optional)** | `curl -s "https://olympics-schedule-planner-api-530886147910.us-central1.run.app/api/v1/sessions?sports=Quidditch"` |
 | **Fail if** | Fabricated sessions or venues for Quidditch. |
 
 ---
@@ -279,7 +279,7 @@ Copy one row per run.
 Use these when a GPT case fails to see if the **API** or the **GPT** is wrong.
 
 ```bash
-BASE="https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app"
+BASE="https://olympics-schedule-planner-api-530886147910.us-central1.run.app"
 
 curl -s "$BASE/api/v1/health"
 curl -s "$BASE/api/v1/sessions?sports=Tennis"

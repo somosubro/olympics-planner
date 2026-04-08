@@ -130,7 +130,7 @@ This section defines the minimum plan shape used for validation.
 
 ### 6.1 Canonical Session Identity
 For runtime validation and plan objects:
-- `primarySessionId` and `alternateSessionIds` must refer to canonical `Session.id`
+- `primarySessionId`, `alternateSessionIds`, and `sessionIds` entries must refer to canonical `Session.id`
 - `sessionCode` is a display/business field, not the primary identity key in plan objects
 
 If a future API accepts `sessionCode` as input, it must resolve it to canonical `Session.id` before validation.
@@ -199,6 +199,9 @@ When the user request is for a **weekend** (see §7.3), the assembled plan must:
 
 Do not represent a default weekend plan as `multi_day`.
 
+### 6.3.2 Same day, multiple sessions (`sessionIds`)
+A plan day may instead list **`sessionIds`**: a non-empty array of session ids for that calendar day (co-equal; not primary vs alternate). Do not combine `sessionIds` with `primarySessionId` / `alternateSessionIds` on the same day.
+
 ### 6.4 Multi-Day Plan
 A multi-day plan contains:
 - `planType = "multi_day"`
@@ -255,17 +258,16 @@ For MVP:
 A plan must not contain empty day objects.
 
 Invalid examples:
-- a `days` entry with no `primarySessionId`
+- a `days` entry with no `primarySessionId` **and** no non-empty `sessionIds`
 - a `days` entry with no usable date/day information
 - a `days` entry with an empty object
 
 ### 6.7 MVP Daily Session Limit
 For MVP:
-- a plan may contain at most **one primary session per day**
-- alternates are allowed for that same day
-- multiple primary sessions on the same day are out of scope for MVP
+- **Legacy shape:** at most **one primary** per day; zero or more alternates on that day.
+- **`sessionIds` shape:** multiple sessions on one day are represented as a single list (see §6.3.2); the server does not resolve time-overlap conflicts between them.
 
-This rule avoids introducing same-day scheduling conflict logic in MVP.
+This rule avoids introducing same-day scheduling conflict logic in MVP beyond listing multiple ids.
 
 ---
 
@@ -441,17 +443,17 @@ This rule belongs partly to application/GPT orchestration, but once a plan objec
 ---
 
 ### PV4. No Same Sport Across Different Days When Forbidden
-If `noSameSportAcrossDays = true`, the same sport must not appear across different days in the same two_day or multi_day plan.
+If `noSameSportAcrossDays = true`, the same sport must not appear across different days in the same two_day or multi_day plan, counting **every session in the plan** (primary **and** alternate session IDs).
 
 #### Pass
-- Saturday Tennis + Sunday Athletics
+- Saturday Tennis + Sunday Athletics (no sport repeats across days)
+- Saturday Cricket + Sunday Swimming (different sports each day)
 
 #### Fail
-- Saturday Tennis + Sunday Tennis
+- Saturday Tennis + Sunday Tennis (any combination of primary/alternate slots)
+- Saturday Cricket primary + Sunday Tennis primary + Sunday Cricket alternate (cricket appears on two calendar days)
 
-For MVP:
-- this rule applies to **primary sessions across days**
-- alternates do not participate in this cross-day sport-repetition rule unless a future revision extends it
+This rule applies to **primary and alternate** session slots so add-ons cannot repeat a sport on another day.
 
 ---
 
@@ -715,8 +717,9 @@ If the request explicitly specifies a day shape, only valid matching shapes shou
 A plan should benefit from containing stronger individual sessions.
 
 For MVP:
-- sum the session scores of all primary sessions in the plan
-- cap the result at `50`
+- **Legacy plan days** (`primarySessionId` / `alternateSessionIds`): sum the session scores of **primary sessions only** (alternates are validated but do not add to this sum).
+- **Session-list days** (`sessionIds` non-empty): sum the session scores of **every** id in `sessionIds` for that day.
+- cap the total at `50`
 
 Examples:
 - one-day plan with session score `34` -> `34`
@@ -745,7 +748,9 @@ Convenience score is a small soft preference for simpler, more usable plans.
 
 For MVP:
 - one-day plan with start time between 10:00 and 18:00 -> `+5`
-- two_day or multi_day plan where all primary sessions start between 10:00 and 18:00 -> `+10`
+- two_day or multi_day plan where, **for each day**, every counted session starts between 10:00 and 18:00 -> `+10`
+  - legacy days: only the **primary** session is counted here (unchanged)
+  - `sessionIds` days: **every** listed session must fall in the window
 - otherwise -> `0`
 
 This is intentionally simple and must remain low-weight.
@@ -761,7 +766,8 @@ If two valid plans share the same **`plan_score`**, break ties using **component
 2. Higher **`summed_session_score`** (component)
 3. Higher **`variety_score`** (component)
 4. Higher **`convenience_score`** (component)
-5. Lexicographic order of **sorted primary `Session.id`** values (ascending)
+5. Higher **total session count** (all ids across all days—primary + alternates + `sessionIds`)
+6. Lexicographic order of **sorted first-session `Session.id` per day** (ascending; first id in `sessionIds`, else primary)
 
 ### 15.2 Session tie-breakers (in order)
 1. Higher **`session_score`**
@@ -921,8 +927,12 @@ Recommended shape:
 - `INVALID_PLAN_TYPE_FOR_DAY_COUNT`
 - `DUPLICATE_SESSION`
 - `REPEATED_SPORT_ACROSS_DAYS`
-- `INVALID_ALTERNATE`
 - `EMPTY_DAY_ENTRY`
+- `CONFLICTING_DAY_SPEC`
+- `TOO_MANY_SESSIONS_PER_DAY`
+- `INSUFFICIENT_SAME_DAY_GAP`
+- `SAME_DAY_SESSION_OVERLAP`
+- `INCOMPLETE_SESSION_TIME`
 
 ### 18.3 Recommended Field Values
 Examples of `field` values:
@@ -933,6 +943,7 @@ Examples of `field` values:
 - `days`
 - `days[0].primarySessionId`
 - `days[1].alternateSessionIds`
+- `days[0].sessionIds`
 
 Clients and tests must rely on `code`, not on parsing free-text `message`.
 

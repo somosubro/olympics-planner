@@ -6,10 +6,10 @@ info:
     and rank sessions or plans using user preferences. Does not generate plans—you assemble
     plans from real session IDs, then validate/rank here.
   version: "1.0.0"
-# Base URL for all paths below — replace YOUR_API_HOST (no trailing slash).
+# Production Cloud Run base URL (no path, no trailing slash) — match `gcloud run deploy` output after each release.
 servers:
-  - url: https://olympics-schedule-planner-api-szizvxo3yq-uc.a.run.app
-    description: Replace with your deployed API base (no trailing slash). For local dev use an HTTPS tunnel (e.g. ngrok) — ChatGPT requires HTTPS.
+  - url: https://olympics-schedule-planner-api-530886147910.us-central1.run.app
+    description: Cloud Run (us-central1), revision deployed from repo; ChatGPT Actions must use this host.
 
 paths:
   /api/v1/health:
@@ -125,7 +125,8 @@ paths:
       operationId: rankPlans
       summary: Rank candidate plans (session IDs resolved server-side)
       description: |
-        Plans must use primarySessionId values that exist in the server's session dataset.
+        Plans must use session ids that exist in the server's session dataset (legacy: primarySessionId
+        and alternateSessionIds; or sessionIds for multiple co-equal same-day sessions).
         Invalid plans are excluded from ranked output unless includeInvalidPlans is true.
       requestBody:
         required: true
@@ -234,6 +235,16 @@ components:
         sportSpecific:
           type: object
           additionalProperties: true
+        minHoursBetweenSameDaySessions:
+          type: number
+          description: >
+            Minimum hours from one session's end to the next session's start on the same calendar day
+            (chronological order). Omitted defaults to 4 (LA-area travel cushion). Set to 0 to disable.
+        maxSessionsPerDay:
+          type: integer
+          minimum: 1
+          description: >
+            Cap sessions per day (e.g. 1 when the user wants at most one event that day). Omitted = no cap.
 
     Plan:
       type: object
@@ -253,6 +264,13 @@ components:
             $ref: "#/components/schemas/PlanDay"
 
     PlanDay:
+      oneOf:
+        - $ref: "#/components/schemas/PlanDayLegacy"
+        - $ref: "#/components/schemas/PlanDaySessionIds"
+      description: |
+        Per calendar day, use either legacy primary + alternates or a sessionIds list—not both.
+
+    PlanDayLegacy:
       type: object
       required:
         - date
@@ -270,6 +288,25 @@ components:
           type: array
           items:
             type: string
+          description: Additional same-day sessions (omit or use [] if none).
+
+    PlanDaySessionIds:
+      type: object
+      required:
+        - date
+        - dayOfWeek
+        - sessionIds
+      properties:
+        date:
+          type: string
+        dayOfWeek:
+          type: string
+        sessionIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          description: All sessions attended that day (co-equal list; not primary vs substitute).
 
     ValidateRequest:
       type: object

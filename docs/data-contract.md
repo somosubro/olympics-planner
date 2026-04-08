@@ -317,8 +317,8 @@ Avoid mixed naming variants in runtime data.
 
 #### `rules.noSameSportAcrossDays`
 - type: `boolean`
-- required: no; **default when omitted: `true`** (each sport at most one calendar day across the plan). Send **`false` only** when the user explicitly wants the same sport on multiple days.
-- meaning: whether repeated sports across different days invalidate a `two_day` or `multi_day` plan
+- required: no; **default when omitted: `true`** (each **sport** may appear on **at most one calendar day** across the whole plan, counting **primary and alternate** session slots). Send **`false` only** when the user explicitly wants the same sport on multiple days.
+- meaning: whether the same sport on two different calendar days invalidates a `two_day` or `multi_day` plan (not limited to primaries only)
 
 #### `rules.preferDayPairs`
 - type: `string[][]`
@@ -329,6 +329,16 @@ Avoid mixed naming variants in runtime data.
 - type: `object` (map of sport key to sport-specific rule payload)
 - required: no; may be omitted or `{}` for MVP
 - meaning: reserved for future sport-specific validation or scoring hints; must not be required for MVP runtime behavior until promoted in this document
+
+#### `rules.minHoursBetweenSameDaySessions`
+- type: `number` (hours)
+- required: no; **default when omitted: `4`** — minimum time from one session’s **end** to the next session’s **start** on the same calendar day (sessions ordered by start time). Approximates feasible travel within the LA area without hard routing. Set **`0`** explicitly to **disable** this check (e.g. user accepts back-to-back sessions).
+- meaning: validation for multi-session days; requires session `startTime` and `endTime` in the dataset
+
+#### `rules.maxSessionsPerDay`
+- type: `integer` (positive)
+- required: no; **default when omitted: no cap**
+- meaning: at most this many session ids per plan day (legacy: primary + alternates; or `sessionIds` length). Use **`1`** when the user wants only one event per day.
 
 ---
 
@@ -493,12 +503,29 @@ A default weekend request is represented as:
 
 ### 11.7 Plan Day Shape
 
+Each day uses **either**:
+
+- **Legacy:** exactly one `primarySessionId`, zero or more `alternateSessionIds` (same calendar day), or
+- **`sessionIds`:** a non-empty array listing **every** session id for that day (co-equal; not “primary vs substitute”). Do **not** send `primarySessionId` / `alternateSessionIds` on the same day as `sessionIds` (see `CONFLICTING_DAY_SPEC`).
+
+Legacy example:
+
 ```json
 {
   "date": "2028-07-15",
   "dayOfWeek": "Saturday",
   "primarySessionId": "session-ten-12",
   "alternateSessionIds": ["session-ath-09"]
+}
+```
+
+Same calendar day, two sports, using `sessionIds` (the weekday in JSON is only an example—use the real `date` / `dayOfWeek` for that day):
+
+```json
+{
+  "date": "2028-07-15",
+  "dayOfWeek": "Saturday",
+  "sessionIds": ["session-equ-10", "session-ckt-16"]
 }
 ```
 
@@ -602,8 +629,12 @@ For MVP:
 - `INVALID_PLAN_TYPE_FOR_DAY_COUNT`
 - `DUPLICATE_SESSION`
 - `REPEATED_SPORT_ACROSS_DAYS`
-- `INVALID_ALTERNATE`
 - `EMPTY_DAY_ENTRY`
+- `CONFLICTING_DAY_SPEC` (both `sessionIds` and legacy primary/alternate fields on the same day)
+- `TOO_MANY_SESSIONS_PER_DAY`
+- `INSUFFICIENT_SAME_DAY_GAP`
+- `SAME_DAY_SESSION_OVERLAP`
+- `INCOMPLETE_SESSION_TIME`
 
 ---
 

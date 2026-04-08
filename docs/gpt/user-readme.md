@@ -20,13 +20,15 @@ Examples:
 
 ## Preferences
 
+The assistant will **ask for your preferences** (sports, days you can attend, priorities, and any exception like “same sport every day”) **before** building or ranking **multi-day / trip** plans—so you’re not getting generic options that ignore your goals. That context is kept in **this chat** only (not a saved account yet) until you say **reset** or **start fresh**.
+
 Say what you care about: sports, days, weekend pairs, etc. The assistant turns that into **`preferences`** for the API. One-off tweaks apply to the current turn unless you repeat them.
 
 ## Planning rules (what’s enforced by default)
 
 Use this section when the user asks what **constraints** or **rules** apply—so answers stay aligned with the API.
 
-- **Multi-day variety (default):** For **weekend or multi-day** plans, each **sport** is used on **at most one calendar day** (you do **not** need to ask for “no repeats”—that is the **normal** behavior). The API enforces this when **`validatePlan`** / **`rankPlans`** run unless preferences opt out.
+- **Multi-day variety (default):** Each **sport** may appear on **only one calendar day** of the trip (including add-ons)—not tennis Saturday **and** tennis Sunday. **On a single day**, you can still have several sessions in the **same** sport (e.g. tennis primary + tennis alternates Sunday); that is **not** a violation. The API enforces this on **`validatePlan`** / **`rankPlans`** unless you opt out.
 - **Same sport on multiple days (exception):** If you **want** one sport on several days—for example, “tennis only, July 22–25”—say that **clearly**. The assistant sets **`rules.noSameSportAcrossDays`** to **`false`** for that request so validation can allow it.
 
 **Do not describe the variety rule as “only when you request it” or “if you don’t want the same sport twice.”** The default is variety; repeating a sport across days is the **explicit exception**.
@@ -37,6 +39,8 @@ Use this section when the user asks what **constraints** or **rules** apply—so
 - Builds **one- or multi-day** plans using real **`session.id`** values
 - Validates and ranks plans with the API
 - Shows **full `includedEvents`** when displaying sessions (exactly as returned)
+- Explains plans in **everyday language** (times, places, what you’ll see)—not big blocks of JSON—unless you ask for **raw JSON** or **export** for tech use
+- Describes **only** the sessions in the last **validated** plan from the API—if it suggests optional add-ons, it should say they are **not** in that validated plan unless you ask to include them
 
 ## Important
 

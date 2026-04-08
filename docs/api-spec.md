@@ -107,7 +107,7 @@ The backend maintains a **canonical session dataset** (how it is loaded is an im
 Session identity rules, including importer-style `id` values, are defined in `docs/data-contract.md` §4.4.
 
 - **`GET /api/v1/sessions`** returns rows from that dataset after applying query filters.
-- **`POST /api/v1/validate`** and **`POST /api/v1/rank/plans`**: every `primarySessionId` and every ID in `alternateSessionIds` **must** resolve to a session in that dataset. Unknown IDs produce validation errors (for example `SESSION_NOT_FOUND`) in a **200** response body using the validation result shape, not an HTTP transport error.
+- **`POST /api/v1/validate`** and **`POST /api/v1/rank/plans`**: every session id in the plan **must** resolve to a session in that dataset—whether listed as `primarySessionId`, in `alternateSessionIds`, or in `sessionIds`. Unknown IDs produce validation errors (for example `SESSION_NOT_FOUND`) in a **200** response body using the validation result shape, not an HTTP transport error. When **`preferences.rules.minHoursBetweenSameDaySessions`** is omitted, validation applies a **default 4-hour** minimum gap (end of earlier session → start of next) for multiple sessions on the same calendar day; set it to **`0`** to disable. See `docs/data-contract.md` §9.2.
 - **`POST /api/v1/rank/sessions`**: the request body includes **full canonical `Session` objects**. The server ranks those payloads using `preferences` and does **not** require a dataset lookup by ID for scoring. Session-level validation still applies per `docs/scoring-and-validation-spec.md`; inputs that fail validation are handled as specified in §12.
 
 ---

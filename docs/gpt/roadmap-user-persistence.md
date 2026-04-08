@@ -4,6 +4,12 @@ This document ties together (1) a **public GitHub Pages** entry point, (2) **fut
 
 ---
 
+## 0. Preference gate (today: GPT only)
+
+The Custom GPT is instructed to **collect and confirm preferences before** building or ranking trip plans; preferences live in **conversation memory** only. That is **not** enforced by the HTTP API (there is no server-side “must have profile first” flag). When you add persistence (below), you can optionally mirror the same rules in the backend later.
+
+---
+
 ## 1. What you want (summary)
 
 | Now | Later |

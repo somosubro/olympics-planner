@@ -2,6 +2,7 @@ package domain_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"olympics-planner/internal/domain"
@@ -45,5 +46,21 @@ func TestPlan_JSONRoundTripCanonicalShape(t *testing.T) {
 	}
 	if out.Days[0].PrimarySessionID != "session-ten-12" {
 		t.Fatal("primary id")
+	}
+}
+
+func TestPlanDay_EffectiveSessionIDs(t *testing.T) {
+	legacy := domain.PlanDay{
+		PrimarySessionID:    "p",
+		AlternateSessionIDs: []string{"a", "b"},
+	}
+	if got := legacy.EffectiveSessionIDs(); !reflect.DeepEqual(got, []string{"p", "a", "b"}) {
+		t.Fatalf("legacy: %v", got)
+	}
+	mod := domain.PlanDay{
+		SessionIDs: []string{"x", "y"},
+	}
+	if got := mod.EffectiveSessionIDs(); !reflect.DeepEqual(got, []string{"x", "y"}) {
+		t.Fatalf("sessionIds: %v", got)
 	}
 }

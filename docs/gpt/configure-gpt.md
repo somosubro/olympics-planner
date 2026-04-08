@@ -11,7 +11,7 @@ Optional **Knowledge** uploads: [`user-readme.md`](user-readme.md), [`preset-pla
 ## A. Prepare the OpenAPI file (once per deploy URL)
 
 1. Open [`openapi.yaml`](openapi.yaml) in this repo.
-2. Find the **`servers:`** section near the top. Under it, set **`url:`** to your Cloud Run base URL **with no path and no trailing slash**, e.g. `https://olympics-schedule-planner-api-xxxxx-uc.a.run.app`. (“`servers[0]`” means the first entry under `servers:`.)
+2. Find the **`servers:`** section near the top. Under it, set **`url:`** to your Cloud Run base URL **with no path and no trailing slash**. The repo is kept in sync with production, for example: `https://olympics-schedule-planner-api-530886147910.us-central1.run.app` (if you redeploy elsewhere, paste the URL `gcloud` prints). (“`servers[0]`” means the first entry under `servers:`.)
 3. Save the file. You will paste its **full contents** into ChatGPT in step D (or **Import from URL** if you host the raw YAML publicly and the UI supports it).
 
 ---
@@ -46,6 +46,16 @@ Optional **Knowledge** uploads: [`user-readme.md`](user-readme.md), [`preset-pla
 1. **Configure** → **Instructions**.
 2. **Replace** the field with the **full contents** of [`instructions.md`](instructions.md) (entire file).
 3. Save.
+
+---
+
+## E2. Capabilities — web search / browsing (choose one posture)
+
+**Option A (recommended for “trip assistant”):** Turn **Web** / **Search** / **Browse** **ON**. Instructions in [`instructions.md`](instructions.md) now **layer** behavior: **schedule** (IDs, times, venues, calendar) stays **Actions-only**; **web** is allowed **only** for non-schedule context (rough pricing discussion, fan/social chatter, hotels)—with citations and “verify official” disclaimers. You accept some risk the model still browses when it shouldn’t; **`instructions.md`** tightens that.
+
+**Option B (maximum schedule purity):** Turn **Web** **OFF**. Fastest, least drift on session codes; no Reddit/pricing context from the model.
+
+Exact capability labels vary by ChatGPT version (**Configure** → capabilities or advanced settings).
 
 ---
 

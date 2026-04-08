@@ -32,6 +32,8 @@ curl -s http://localhost:8080/api/v1/health
 curl -s 'http://localhost:8080/api/v1/sessions?sports=Tennis&dayOfWeek=Saturday'
 ```
 
+**Production (Cloud Run):** `https://olympics-schedule-planner-api-530886147910.us-central1.run.app` — e.g. `curl -s "https://olympics-schedule-planner-api-530886147910.us-central1.run.app/api/v1/health"`. Update [`docs/gpt/openapi.yaml`](docs/gpt/openapi.yaml) if `gcloud run deploy` prints a new base URL.
+
 Cross-origin browser calls are allowed via CORS (`Access-Control-Allow-Origin: *`) for local testing.
 
 Optional: open [`test-api.html`](test-api.html) in your browser (file URL) and click the buttons while the server runs.

@@ -15,15 +15,17 @@ The conversational app (or you, when calling the API) sends a **single effective
 
 ---
 
-## 2. The five things you set
+## 2. What you set
 
 | Field | In plain language |
 |-------|-------------------|
 | **`allowedSports`** | Sports you are willing to consider. Sessions outside this set fail validation / ranking rules that depend on preferences. |
 | **`sportPriority`** | Order from **most** to **least** wanted. Used when **ranking**—higher-listed sports score higher (within the model in [scoring-and-validation-spec.md](scoring-and-validation-spec.md)). |
 | **`allowedDays`** | Which weekdays are in play (e.g. only `Saturday` and `Sunday` for a weekend trip). |
-| **`rules.noSameSportAcrossDays`** | **Default `true`** (omit or set `true`): a multi-day plan cannot use the **same sport** on two different days. Set **`false` only** if the user explicitly wants the same sport on multiple days. |
+| **`rules.noSameSportAcrossDays`** | **Default `true`**: the **same sport** cannot appear on two different calendar days (including **alternates / add-ons**). Set **`false` only** if the user explicitly wants that. |
 | **`rules.preferDayPairs`** | Soft ranking hint: which **pairs of weekdays** you like for multi-day plans (e.g. Saturday + Sunday). Optional but useful for plan scores. |
+| **`rules.minHoursBetweenSameDaySessions`** | **Default when omitted: `4`** — minimum hours from one session’s **end** to the next’s **start** on the same day (feasible travel in the LA area; not turn-by-turn routing). Set **`0`** to turn off this check. |
+| **`rules.maxSessionsPerDay`** | Cap sessions per calendar day (e.g. **`1`** when the user wants at most one event that day). Omit for no cap. |
 | **`rules.sportSpecific`** | Reserved; use `{}` for MVP. |
 
 Every sport name should match how it appears in **`data/sessions.json`** (e.g. `Tennis`, `Athletics`, `Sailing (Windsurfing & Kite)` if that is what was imported).

@@ -164,21 +164,23 @@ The repo includes a [`.gcloudignore`](../.gcloudignore) to keep uploads small wh
 
 On first deploy, `gcloud` may ask to enable APIs or link Artifact Registry; accept the prompts.
 
-When it finishes, the command prints the **service URL**, for example:
+When it finishes, the command prints the **service URL**. This project’s current production base (no trailing slash) is:
 
-`https://olympics-schedule-planner-api-xxxxx-uc.a.run.app`
+`https://olympics-schedule-planner-api-530886147910.us-central1.run.app`
+
+(Older `*.a.run.app` hostnames may still alias; use the URL from the latest successful deploy when updating docs.)
 
 ## Verify
 
 ```bash
-curl -s "https://YOUR_SERVICE_URL/api/v1/health"
+curl -s "https://olympics-schedule-planner-api-530886147910.us-central1.run.app/api/v1/health"
 ```
 
 You should see JSON like `{"status":"ok"}`.
 
 ## Custom GPT / OpenAPI
 
-1. Set `servers[0].url` in [`docs/gpt/openapi.yaml`](gpt/openapi.yaml) to your **Cloud Run URL** (no trailing slash), e.g. `https://olympics-schedule-planner-api-xxxxx-uc.a.run.app`.
+1. Keep `servers[0].url` in [`docs/gpt/openapi.yaml`](gpt/openapi.yaml) equal to your **Cloud Run URL** (no trailing slash)—see the production URL above.
 2. Re-import the schema in the GPT **Actions** editor if it changed.
 3. Paste the full [`docs/gpt/instructions.md`](gpt/instructions.md) into **Instructions** when it changes; full editor steps: [`docs/gpt/configure-gpt.md`](gpt/configure-gpt.md).
 
