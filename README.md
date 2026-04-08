@@ -48,7 +48,7 @@ You do **not** have to use Lambda. A **container** (Dockerfile in repo) on Cloud
 
 ### Optional web browsing (trip context)
 
-The default **instructions** on `main` use a **layered** rule: **schedule is always API-only** (`listSessions`, validation, real `session.id` values)—never the public web for times, venues, or calendar rows. Separately, you **may** turn **Web** / **Search** / **Browse** **on** in the GPT editor so the model can answer **non-schedule** questions (rough ticket or resale discussion, hotel or area ideas, fan/social chatter). Those answers must stay **clearly separate** from validated plan text, with sources and “check official sellers” language—see **§E2** in [`docs/gpt/configure-gpt.md`](docs/gpt/configure-gpt.md) (**Option A** vs **Option B** if you want zero browsing for maximum schedule purity).
+The **instructions** use **layered** rules: **schedule is always API-only** (`listSessions`, validation, real `session.id` values)—never the web for times, venues, or which sessions exist—and **`listSessions` must run before any web search** when the user asks for plans, ticket choices, or group trips (so the model does not “hunt the Olympics API” or browse before Actions). Optionally turn **Web** **on** for **non-schedule** context **after** that (rough pricing/hospitality, hotels, fan chatter)—clearly **separate** from plan text, with citations and “verify official sellers.” See **§E2** in [`docs/gpt/configure-gpt.md`](docs/gpt/configure-gpt.md) (**Option A** vs **B**).
 
 ## Import LA28 schedule (CLI)
 
